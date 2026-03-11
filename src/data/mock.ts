@@ -10,7 +10,7 @@ export type RideType = 'training' | 'lesson' | 'mock-test' | 'hack';
 export type DisciplineTrack = 'usdf' | 'pony-club' | 'hunter-jumper';
 
 export interface BiometricsSnapshot {
-  lowerLegStability:   number; // 0–1 (higher = better)
+  lowerLegStability:   number;
   reinSteadiness:      number;
   reinSymmetry:        number;
   coreStability:       number;
@@ -54,7 +54,7 @@ export interface Ride {
   date: string;
   horse: string;
   type: RideType;
-  duration: number; // minutes
+  duration: number;
   focusMilestone: string;
   reflection: string;
   trainerFeedback?: string;
@@ -260,7 +260,7 @@ export const mockRides: Ride[] = [
     duration: 45,
     focusMilestone: 'Lower Leg Stability',
     reflection: 'Felt much more stable on the left rein today. Right rein still feels like my leg wants to creep forward. The stirrup-less work at the end really helped.',
-    trainerFeedback: 'Good progress on the lower leg. Watch the right heel — it's coming up in the trot-canter transitions. Try the two-point exercise before each canter departure.',
+    trainerFeedback: 'Good progress on the lower leg. Watch the right heel — it\'s coming up in the trot-canter transitions. Try the two-point exercise before each canter departure.',
     cadenceInsight: 'Your lower leg stability score improved by 12% compared to your last 3 rides. The drift is now mainly on the right rein — a consistent pattern across 4 sessions.',
     signal: 'improving',
     videoUploaded: true,

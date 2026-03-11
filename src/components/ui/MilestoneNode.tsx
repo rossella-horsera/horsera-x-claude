@@ -1,4 +1,3 @@
-// Milestone Node — used in Journey progression map
 import type { MilestoneState } from '../../data/mock';
 
 interface MilestoneNodeProps {
@@ -54,9 +53,7 @@ export default function MilestoneNode({
 
   return (
     <div style={{ display: 'flex', gap: '14px', position: 'relative' }}>
-      {/* Left: node + connector line */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-        {/* Node circle */}
         <button
           onClick={onClick}
           style={{
@@ -75,20 +72,16 @@ export default function MilestoneNode({
           }}
         >
           {state === 'mastered' ? (
-            // Check mark
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
               <path d="M5 12L10 17L19 7" stroke="#FAF7F3" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           ) : state === 'working' ? (
-            // Partial fill dot
             <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#C9A96E' }} />
           ) : (
-            // Empty dot
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#EDE7DF' }} />
           )}
         </button>
 
-        {/* Connector line */}
         {!isLast && (
           <div
             style={{
@@ -103,7 +96,6 @@ export default function MilestoneNode({
         )}
       </div>
 
-      {/* Right: content */}
       <div
         style={{
           flex: 1,
@@ -112,7 +104,6 @@ export default function MilestoneNode({
         }}
         onClick={onClick}
       >
-        {/* Name + state pill */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
           <span
             style={{
@@ -141,7 +132,6 @@ export default function MilestoneNode({
           </span>
         </div>
 
-        {/* Progress bar for working state */}
         {state === 'working' && (
           <div style={{ marginBottom: '6px' }}>
             <div
@@ -176,7 +166,6 @@ export default function MilestoneNode({
           </div>
         )}
 
-        {/* Chevron for active/working */}
         {isActive && state !== 'untouched' && (
           <div style={{ fontSize: '11px', color: '#8C5A3C', fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>
             Tap to view exercises →

@@ -1,6 +1,3 @@
-// Cadence AI Insight Card — used across all screens
-// Always clearly labeled as AI-generated, always below human content
-
 interface CadenceInsightCardProps {
   text: string;
   onAskMore?: () => void;
@@ -22,9 +19,7 @@ export default function CadenceInsightCard({
         boxShadow: '0 1px 8px rgba(26,20,14,0.04)',
       }}
     >
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '8px' }}>
-        {/* Cadence orb */}
         <div
           style={{
             width: 20, height: 20,
@@ -61,7 +56,6 @@ export default function CadenceInsightCard({
         </span>
       </div>
 
-      {/* Text */}
       <p
         style={{
           fontSize: compact ? '12.5px' : '13px',
@@ -74,7 +68,6 @@ export default function CadenceInsightCard({
         {text}
       </p>
 
-      {/* Ask more CTA */}
       {onAskMore && (
         <button
           onClick={onAskMore}

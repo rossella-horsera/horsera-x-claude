@@ -34,7 +34,6 @@ export default function RidesPage() {
     }, 2000);
   };
 
-  // Group rides by month
   const grouped = mockRides.reduce((acc, ride) => {
     const d = new Date(ride.date);
     const key = d.toLocaleDateString('en', { month: 'long', year: 'numeric' });
@@ -46,7 +45,6 @@ export default function RidesPage() {
   return (
     <div style={{ background: '#FAF7F3', minHeight: '100%' }}>
 
-      {/* ─── Header ─── */}
       <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid #EDE7DF' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
@@ -73,7 +71,6 @@ export default function RidesPage() {
         </div>
       </div>
 
-      {/* ─── Log Ride form (slide-in) ─── */}
       {showLogForm && (
         <div style={{
           background: '#FFFFFF', margin: '12px 20px',
@@ -98,7 +95,6 @@ export default function RidesPage() {
                 <button onClick={() => setShowLogForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B5A898', fontSize: '20px' }}>×</button>
               </div>
 
-              {/* Ride type */}
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ fontSize: '11px', fontWeight: 600, color: '#B5A898', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif", display: 'block', marginBottom: '8px' }}>Ride type</label>
                 <div style={{ display: 'flex', gap: 6 }}>
@@ -121,7 +117,6 @@ export default function RidesPage() {
                 </div>
               </div>
 
-              {/* Duration */}
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ fontSize: '11px', fontWeight: 600, color: '#B5A898', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif", display: 'block', marginBottom: '8px' }}>Duration (minutes)</label>
                 <input
@@ -138,7 +133,6 @@ export default function RidesPage() {
                 />
               </div>
 
-              {/* Focus milestone */}
               <div style={{ marginBottom: '14px' }}>
                 <label style={{ fontSize: '11px', fontWeight: 600, color: '#B5A898', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif", display: 'block', marginBottom: '8px' }}>Focus milestone</label>
                 <select
@@ -158,7 +152,6 @@ export default function RidesPage() {
                 </select>
               </div>
 
-              {/* Reflection */}
               <div style={{ marginBottom: '18px' }}>
                 <label style={{ fontSize: '11px', fontWeight: 600, color: '#B5A898', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif", display: 'block', marginBottom: '8px' }}>Reflection (optional)</label>
                 <textarea
@@ -177,7 +170,6 @@ export default function RidesPage() {
                 />
               </div>
 
-              {/* Video upload placeholder */}
               <div style={{
                 border: '1.5px dashed #EDE7DF', borderRadius: '10px',
                 padding: '14px', textAlign: 'center', marginBottom: '18px',
@@ -208,7 +200,6 @@ export default function RidesPage() {
         </div>
       )}
 
-      {/* ─── Ride history ─── */}
       <div style={{ padding: '16px 20px 28px' }}>
         {Object.entries(grouped).map(([month, rides]) => (
           <div key={month}>
@@ -236,6 +227,13 @@ function RideRow({ ride, onClick }: { ride: Ride; onClick: () => void }) {
   const d = new Date(ride.date);
   const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
+  const rideTypeLabel: Record<string, string> = {
+    training: '🐎 Training',
+    lesson: '👩‍🏫 Lesson',
+    'mock-test': '📋 Mock Test',
+    hack: '🌳 Hack',
+  };
+
   return (
     <div
       onClick={onClick}
@@ -246,10 +244,8 @@ function RideRow({ ride, onClick }: { ride: Ride; onClick: () => void }) {
         transition: 'transform 0.1s ease',
       }}
     >
-      {/* Type dot */}
       <div style={{ width: 9, height: 9, borderRadius: '50%', background: signal.color, flexShrink: 0, marginTop: 1 }} />
 
-      {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
           <span style={{ fontSize: '13.5px', fontWeight: 500, color: '#1A140E', fontFamily: "'DM Sans', sans-serif" }}>
@@ -266,7 +262,6 @@ function RideRow({ ride, onClick }: { ride: Ride; onClick: () => void }) {
         </div>
       </div>
 
-      {/* Signal */}
       <div style={{ textAlign: 'center', flexShrink: 0 }}>
         <div style={{ fontSize: '18px', color: signal.color, lineHeight: 1 }}>{signal.symbol}</div>
         <div style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B5A898', fontFamily: "'DM Sans', sans-serif" }}>

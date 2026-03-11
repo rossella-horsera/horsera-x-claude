@@ -18,7 +18,6 @@ export default function JourneyPage() {
 
       {/* ─── Page header ─── */}
       <div style={{ padding: '20px 20px 0' }}>
-        {/* Eyebrow */}
         <div style={{
           fontSize: '10px', fontWeight: 600, letterSpacing: '0.16em',
           textTransform: 'uppercase', color: '#B5A898',
@@ -35,7 +34,6 @@ export default function JourneyPage() {
               {mockGoal.test} · with {mockRider.horse}
             </div>
           </div>
-          {/* Mini readiness arc */}
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '22px', fontWeight: 500, color: '#8C5A3C' }}>
               {masteredCount}/{totalCount}
@@ -87,7 +85,6 @@ export default function JourneyPage() {
               )}
             />
 
-            {/* Expanded milestone detail */}
             {expandedMilestoneId === milestone.id && (
               <MilestoneDetail milestone={milestone} />
             )}
@@ -124,7 +121,6 @@ export default function JourneyPage() {
               </div>
             </div>
 
-            {/* Test readiness rows */}
             {[
               { task: 'Entry, halt, salute', state: 'solid' },
               { task: '20m trot circle (both reins)', state: 'consolidating' },
@@ -154,7 +150,6 @@ export default function JourneyPage() {
               </div>
             ))}
 
-            {/* V2 placeholder */}
             <div style={{
               marginTop: '14px', padding: '10px 12px',
               background: '#F8F3EC', borderRadius: '10px',
@@ -192,7 +187,6 @@ function MilestoneDetail({ milestone }: { milestone: Milestone }) {
       boxShadow: '0 2px 10px rgba(26,20,14,0.06)',
       border: '1px solid #F0EBE4',
     }}>
-      {/* Three-layer connection */}
       <div style={{ marginBottom: '14px' }}>
         {[
           { label: 'What you can control', value: milestone.biomechanicsFocus.slice(0, 2).join(', '), color: '#8C5A3C' },
@@ -215,7 +209,6 @@ function MilestoneDetail({ milestone }: { milestone: Milestone }) {
 
       <div style={{ height: '1px', background: '#F0EBE4', marginBottom: '12px' }} />
 
-      {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: '12px' }}>
         {(['exercises', 'about'] as const).map(t => (
           <button
@@ -239,7 +232,6 @@ function MilestoneDetail({ milestone }: { milestone: Milestone }) {
         ))}
       </div>
 
-      {/* Tab content */}
       {tab === 'exercises' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {milestone.exercises.length > 0 ? milestone.exercises.map(ex => (

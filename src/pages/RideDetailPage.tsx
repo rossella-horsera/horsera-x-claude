@@ -37,7 +37,6 @@ export default function RideDetailPage() {
   return (
     <div style={{ background: '#FAF7F3', minHeight: '100%' }}>
 
-      {/* ─── Back + header ─── */}
       <div style={{ padding: '16px 20px 0' }}>
         <button
           onClick={() => navigate('/rides')}
@@ -54,7 +53,6 @@ export default function RideDetailPage() {
           All Rides
         </button>
 
-        {/* Ride title */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
           <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '24px', fontWeight: 400, color: '#1A140E', lineHeight: 1.2 }}>
             {dateStr}
@@ -73,7 +71,6 @@ export default function RideDetailPage() {
 
       <div style={{ padding: '0 20px 28px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
-        {/* Focus milestone */}
         <div style={{
           background: '#FFFFFF', borderRadius: '16px', padding: '16px',
           borderLeft: '4px solid #8C5A3C', boxShadow: '0 2px 10px rgba(26,20,14,0.06)',
@@ -91,7 +88,6 @@ export default function RideDetailPage() {
           )}
         </div>
 
-        {/* Rider reflection */}
         {ride.reflection && (
           <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 10px rgba(26,20,14,0.05)' }}>
             <div style={{ fontSize: '10px', fontWeight: 600, color: '#B5A898', letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif", marginBottom: '8px' }}>
@@ -103,7 +99,6 @@ export default function RideDetailPage() {
           </div>
         )}
 
-        {/* Trainer feedback */}
         {ride.trainerFeedback && (
           <div style={{
             background: '#FFFFFF', borderRadius: '16px', padding: '16px',
@@ -127,12 +122,10 @@ export default function RideDetailPage() {
           </div>
         )}
 
-        {/* Cadence insight */}
         {ride.cadenceInsight && (
           <CadenceInsightCard text={ride.cadenceInsight} />
         )}
 
-        {/* Biomechanics section */}
         {ride.biometrics && (
           <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 10px rgba(26,20,14,0.05)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -168,7 +161,6 @@ export default function RideDetailPage() {
           </div>
         )}
 
-        {/* Video section */}
         {ride.videoUploaded ? (
           <div style={{ background: '#1C1510', borderRadius: '16px', padding: '16px', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
             <div style={{ textAlign: 'center' }}>

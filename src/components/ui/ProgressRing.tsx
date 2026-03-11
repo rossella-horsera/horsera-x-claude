@@ -1,15 +1,12 @@
-// Horsera Progress Ring — reusable SVG arc component
-// Used on Home (milestone hero) and Journey (level readiness)
-
 interface ProgressRingProps {
-  progress: number;        // 0–1
-  size?: number;           // diameter in px, default 190
-  strokeWidth?: number;    // default 13
-  label: string;           // center top label (milestone name)
-  sublabel: string;        // center bottom label (e.g. "3/5 rides")
-  sublabelCaption?: string;// tiny caption below sublabel
-  color?: string;          // progress color, default cognac
-  trackColor?: string;     // background arc color
+  progress: number;
+  size?: number;
+  strokeWidth?: number;
+  label: string;
+  sublabel: string;
+  sublabelCaption?: string;
+  color?: string;
+  trackColor?: string;
 }
 
 export default function ProgressRing({
@@ -22,26 +19,19 @@ export default function ProgressRing({
   color = '#8C5A3C',
   trackColor = '#EDE7DF',
 }: ProgressRingProps) {
-  // SVG geometry
   const viewSize = 200;
   const cx = viewSize / 2;
   const cy = viewSize / 2;
   const r = 80;
   const circumference = 2 * Math.PI * r;
 
-  // 270° arc (3/4 circle) — gap at bottom
   const arcAngle = 270;
-  const arcLength = (arcAngle / 360) * circumference;      // 376.99
-  const gapLength = circumference - arcLength;              // 125.66
-  const progressLength = Math.max(0, Math.min(progress, 1)) * arcLength;
-
-  // rotate(135) positions start at bottom-left, arc goes clockwise to bottom-right
-  const rotation = 135;
-
-  // Inner accent ring radius
+  const arcLength = (arcAngle / 360) * circumference;
   const innerR = 66;
   const innerCircumference = 2 * Math.PI * innerR;
   const innerArcLength = (arcAngle / 360) * innerCircumference;
+  const progressLength = Math.max(0, Math.min(progress, 1)) * arcLength;
+  const rotation = 135;
 
   return (
     <div
@@ -55,7 +45,6 @@ export default function ProgressRing({
         flexShrink: 0,
       }}
     >
-      {/* Subtle glow behind ring */}
       <div
         style={{
           position: 'absolute',
@@ -67,14 +56,12 @@ export default function ProgressRing({
         }}
       />
 
-      {/* SVG Ring */}
       <svg
         viewBox={`0 0 ${viewSize} ${viewSize}`}
         width={size}
         height={size}
         style={{ position: 'absolute', top: 0, left: 0 }}
       >
-        {/* Outer subtle halo */}
         <circle
           cx={cx} cy={cy} r={r + 12}
           stroke="rgba(140,90,60,0.05)"
@@ -82,7 +69,6 @@ export default function ProgressRing({
           fill="none"
         />
 
-        {/* Background track arc */}
         <circle
           cx={cx} cy={cy} r={r}
           fill="none"
@@ -93,7 +79,6 @@ export default function ProgressRing({
           transform={`rotate(${rotation} ${cx} ${cy})`}
         />
 
-        {/* Inner accent ring */}
         <circle
           cx={cx} cy={cy} r={innerR}
           fill="none"
@@ -104,7 +89,6 @@ export default function ProgressRing({
           transform={`rotate(${rotation} ${cx} ${cy})`}
         />
 
-        {/* Progress fill */}
         {progressLength > 0 && (
           <circle
             cx={cx} cy={cy} r={r}
@@ -118,7 +102,6 @@ export default function ProgressRing({
           />
         )}
 
-        {/* Champagne tip dot at progress end */}
         {progressLength > 8 && (
           <circle
             cx={cx} cy={cy} r={r}
@@ -134,7 +117,6 @@ export default function ProgressRing({
         )}
       </svg>
 
-      {/* Center content */}
       <div
         style={{
           position: 'relative',

@@ -14,7 +14,6 @@ const suggestedPrompts = [
   'Explain my lower leg stability score',
 ];
 
-// Simulated Cadence responses (replace with real AI in production)
 const getCadenceResponse = (question: string): string => {
   const q = question.toLowerCase();
   if (q.includes('focus') || q.includes('next ride')) {
@@ -41,7 +40,7 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'cadence',
-      text: `Hi ${mockRider.firstName}. I\'ve been watching your recent rides. Your rein steadiness has improved noticeably — and your lower leg is your current focus. What\'s on your mind today?`,
+      text: `Hi ${mockRider.firstName}. I've been watching your recent rides. Your rein steadiness has improved noticeably — and your lower leg is your current focus. What's on your mind today?`,
       timestamp: 'Now',
     },
   ]);
@@ -74,7 +73,6 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
 
   return (
     <>
-      {/* Backdrop */}
       <div
         onClick={onClose}
         style={{
@@ -85,7 +83,6 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
         }}
       />
 
-      {/* Drawer */}
       <div
         style={{
           position: 'fixed',
@@ -104,12 +101,10 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
           boxShadow: '0 -8px 40px rgba(0,0,0,0.18)',
         }}
       >
-        {/* Handle */}
         <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '12px', paddingBottom: '4px' }}>
           <div style={{ width: '36px', height: '4px', background: '#EDE7DF', borderRadius: '2px' }} />
         </div>
 
-        {/* Header */}
         <div style={{
           padding: '12px 20px 14px',
           borderBottom: '1px solid #EDE7DF',
@@ -117,7 +112,6 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
           alignItems: 'center',
           gap: '10px',
         }}>
-          {/* Cadence orb */}
           <div style={{
             width: '36px', height: '36px',
             borderRadius: '50%',
@@ -145,7 +139,6 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
           </button>
         </div>
 
-        {/* Messages */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {messages.map((msg, i) => (
             <div
@@ -192,7 +185,6 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Suggested prompts */}
         {messages.length < 3 && (
           <div style={{ padding: '0 16px 8px', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {suggestedPrompts.map((p, i) => (
@@ -217,7 +209,6 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
           </div>
         )}
 
-        {/* Input */}
         <div style={{
           padding: '12px 16px 24px',
           borderTop: '1px solid #EDE7DF',

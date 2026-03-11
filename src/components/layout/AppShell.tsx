@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import BottomNav from './BottomNav';
 import CadenceFAB from './CadenceFAB';
 import CadenceDrawer from './CadenceDrawer';
@@ -12,7 +11,6 @@ export default function AppShell({ children }: AppShellProps) {
   const [cadenceOpen, setCadenceOpen] = useState(false);
 
   return (
-    // Full screen container — parchment background
     <div
       className="relative flex flex-col overflow-hidden"
       style={{
@@ -23,7 +21,6 @@ export default function AppShell({ children }: AppShellProps) {
         margin: '0 auto',
       }}
     >
-      {/* Google Fonts injection — in production add to index.html */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap');
         * { box-sizing: border-box; }
@@ -32,7 +29,6 @@ export default function AppShell({ children }: AppShellProps) {
         scrollbar-width: none;
       `}</style>
 
-      {/* Main scrollable content — leaves room for bottom nav */}
       <main
         className="flex-1 overflow-y-auto"
         style={{ paddingBottom: '82px' }}
@@ -40,13 +36,8 @@ export default function AppShell({ children }: AppShellProps) {
         {children}
       </main>
 
-      {/* Bottom navigation */}
       <BottomNav />
-
-      {/* Cadence floating button */}
       <CadenceFAB onClick={() => setCadenceOpen(true)} />
-
-      {/* Cadence slide-up drawer */}
       <CadenceDrawer
         open={cadenceOpen}
         onClose={() => setCadenceOpen(false)}

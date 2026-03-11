@@ -11,8 +11,6 @@ export default function CadenceFAB({ onClick }: CadenceFABProps) {
         position: 'fixed',
         bottom: '94px',
         right: '20px',
-        // Center within max-width container
-        // In real app: right: 'calc(50% - 215px + 20px)' for max-width 430
         width: '50px',
         height: '50px',
         borderRadius: '50%',
@@ -37,7 +35,6 @@ export default function CadenceFAB({ onClick }: CadenceFABProps) {
         (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
       }}
     >
-      {/* Champagne orb with dark center */}
       <div
         style={{
           width: '21px',

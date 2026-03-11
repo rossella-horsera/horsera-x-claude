@@ -14,7 +14,6 @@ const METRIC_CONFIG = [
 
 type MetricKey = typeof METRIC_CONFIG[number]['key'];
 
-// Mini sparkline SVG for trend chart
 function SparkLine({ data, color }: { data: number[]; color: string }) {
   const w = 80, h = 28;
   const min = Math.min(...data);
@@ -28,7 +27,6 @@ function SparkLine({ data, color }: { data: number[]; color: string }) {
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ overflow: 'visible' }}>
       <polyline points={pts} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      {/* End dot */}
       {data.length > 0 && (() => {
         const last = data[data.length - 1];
         const x = w;
@@ -39,7 +37,6 @@ function SparkLine({ data, color }: { data: number[]; color: string }) {
   );
 }
 
-// Full-width multi-line chart
 function TrendChart({
   data,
   activeMetrics,
@@ -62,7 +59,6 @@ function TrendChart({
       viewBox={`0 0 ${W} ${H}`}
       style={{ overflow: 'visible', display: 'block' }}
     >
-      {/* Grid lines */}
       {yTicks.map(t => (
         <g key={t}>
           <line
@@ -79,7 +75,6 @@ function TrendChart({
         </g>
       ))}
 
-      {/* X-axis labels */}
       {data.map((d, i) => (
         <text
           key={i}
@@ -91,11 +86,10 @@ function TrendChart({
         </text>
       ))}
 
-      {/* Metric lines */}
       {METRIC_CONFIG.map(({ key, color }) => {
         if (!activeMetrics.has(key)) return null;
         const pts = data.map((d, i) =>
-          `${xPos(i)},${yPos((d as Record<string, number>)[key])}`
+          `${xPos(i)},${yPos((d as unknown as Record<string, number>)[key])}`
         ).join(' ');
         return (
           <g key={key}>
@@ -107,12 +101,11 @@ function TrendChart({
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            {/* Dots at each data point */}
             {data.map((d, i) => (
               <circle
                 key={i}
                 cx={xPos(i)}
-                cy={yPos((d as Record<string, number>)[key])}
+                cy={yPos((d as unknown as Record<string, number>)[key])}
                 r="2"
                 fill={color}
               />
@@ -124,14 +117,13 @@ function TrendChart({
   );
 }
 
-// Single metric row in the summary list
 function MetricSummaryRow({ metricKey, label, color, data }: {
   metricKey: MetricKey;
   label: string;
   color: string;
   data: typeof biometricsTrend;
 }) {
-  const values = data.map(d => (d as Record<string, number>)[metricKey]);
+  const values = data.map(d => (d as unknown as Record<string, number>)[metricKey]);
   const latest = values[values.length - 1];
   const first = values[0];
   const delta = latest - first;
@@ -158,7 +150,6 @@ function MetricSummaryRow({ metricKey, label, color, data }: {
   );
 }
 
-// Patterns tab content
 function PatternsTab() {
   const signalCounts = { improving: 0, consistent: 0, 'needs-work': 0 };
   mockRides.forEach(r => signalCounts[r.signal]++);
@@ -197,7 +188,6 @@ function PatternsTab() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      {/* Ride signal summary */}
       <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 10px rgba(26,20,14,0.05)' }}>
         <div style={{ fontSize: '10px', fontWeight: 600, color: '#B5A898', letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif", marginBottom: '12px' }}>
           Ride Signals — Last {total} Rides
@@ -217,7 +207,6 @@ function PatternsTab() {
         </div>
       </div>
 
-      {/* Pattern cards */}
       {patterns.map((p, i) => (
         <div key={i} style={{
           background: '#FFFFFF', borderRadius: '16px', padding: '14px 16px',
@@ -257,7 +246,7 @@ export default function InsightsPage() {
     setActiveMetrics(prev => {
       const next = new Set(prev);
       if (next.has(key)) {
-        if (next.size > 1) next.delete(key); // always keep at least one
+        if (next.size > 1) next.delete(key);
       } else {
         next.add(key);
       }
@@ -265,7 +254,6 @@ export default function InsightsPage() {
     });
   };
 
-  // Latest snapshot for summary
   const latest = biometricsTrend[biometricsTrend.length - 1];
   const overallScore = Math.round(
     ((latest.lowerLeg + latest.reins + latest.core + latest.upperBody + latest.pelvis) / 5) * 100
@@ -280,7 +268,6 @@ export default function InsightsPage() {
   return (
     <div style={{ background: '#FAF7F3', minHeight: '100%' }}>
 
-      {/* ─── Header ─── */}
       <div style={{ padding: '20px 20px 0' }}>
         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '26px', fontWeight: 400, color: '#1A140E', marginBottom: '4px' }}>
           Insights
@@ -289,7 +276,6 @@ export default function InsightsPage() {
           4-week biomechanics overview
         </p>
 
-        {/* Overall score pill */}
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: '8px',
           background: '#FFFFFF', borderRadius: '12px', padding: '8px 14px',
@@ -313,10 +299,8 @@ export default function InsightsPage() {
 
       <div style={{ padding: '0 20px 28px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
-        {/* Cadence insight */}
         <CadenceInsightCard text={cadenceInsights.insights} />
 
-        {/* Tabs */}
         <div style={{
           display: 'flex', gap: '4px',
           background: '#F0EBE4', borderRadius: '12px', padding: '4px',
@@ -341,10 +325,8 @@ export default function InsightsPage() {
           ))}
         </div>
 
-        {/* ─── TRENDS TAB ─── */}
         {activeTab === 'trends' && (
           <>
-            {/* Metric toggles */}
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               {METRIC_CONFIG.map(({ key, label, color }) => {
                 const active = activeMetrics.has(key);
@@ -370,7 +352,6 @@ export default function InsightsPage() {
               })}
             </div>
 
-            {/* Chart card */}
             <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 10px rgba(26,20,14,0.05)' }}>
               <div style={{ fontSize: '10px', fontWeight: 600, color: '#B5A898', letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif", marginBottom: '12px' }}>
                 Score Over Time (0–100%)
@@ -381,7 +362,6 @@ export default function InsightsPage() {
               </div>
             </div>
 
-            {/* Metric summary rows */}
             <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '14px 16px', boxShadow: '0 2px 10px rgba(26,20,14,0.05)' }}>
               <div style={{ fontSize: '10px', fontWeight: 600, color: '#B5A898', letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif", marginBottom: '4px' }}>
                 Latest Snapshot
@@ -393,7 +373,6 @@ export default function InsightsPage() {
           </>
         )}
 
-        {/* ─── MILESTONES TAB ─── */}
         {activeTab === 'milestones' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {mockGoal.milestones.map(ms => {
@@ -446,7 +425,6 @@ export default function InsightsPage() {
           </div>
         )}
 
-        {/* ─── PATTERNS TAB ─── */}
         {activeTab === 'patterns' && <PatternsTab />}
 
       </div>
