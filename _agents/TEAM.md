@@ -22,6 +22,7 @@ Ross is also a deep equestrian expert. He understands the world riders, trainers
 **Skills:**
 - Product strategy and long-term vision
 - Equestrian domain expertise (disciplines, trainer dynamics, barn culture, competition structure, rider psychology, industry economics)
+- Equestrian biomechanics knowledge — understands what good lower leg stability, rein symmetry, core stability, and seat independence look like in practice, and can validate whether a technical metric calculation reflects what a trainer actually sees
 - Roadmap management and prioritization
 - Competitive positioning and market analysis
 - User story definition and scope decisions (MVP vs V2 vs V3)
@@ -117,6 +118,11 @@ Lauren owns how Horsera feels and how riders think about it. She is the team's d
 - Mock data architecture
 - Technical documentation (code comments, README, CLAUDE.md, component specs)
 - npm scripts and build tooling
+- ML/AI engineering — model evaluation, selection, and integration
+- Computer vision and pose estimation (MediaPipe, MoveNet, OpenPose, ViTPose, YOLO-Pose)
+- Video processing pipelines — frame sampling, preprocessing, performance optimization
+- Translating ML model output (joint positions/angles) into application metrics
+- Performance architecture for long-form video analysis (30-60 min consumer videos)
 
 **Technical standards Beau always follows:**
 - Mobile-first, max-width 430px
