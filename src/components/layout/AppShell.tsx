@@ -52,7 +52,8 @@ function AppShellInner({ children }: AppShellProps) {
         transform: 'translateX(-50%)',
         width: '100%',
         maxWidth: '430px',
-        height: '48px',
+        minHeight: '48px',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
         background: 'rgba(250,247,243,0.95)',
         backdropFilter: 'blur(16px)',
         borderBottom: '1px solid #EDE7DF',
@@ -71,7 +72,7 @@ function AppShellInner({ children }: AppShellProps) {
 
       <main
         className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: '82px', paddingTop: '48px' }}
+        style={{ paddingBottom: '82px', paddingTop: 'calc(48px + env(safe-area-inset-top, 0px))' }}
       >
         {children}
       </main>
