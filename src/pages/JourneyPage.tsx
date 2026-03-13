@@ -2,6 +2,7 @@ import { useState } from 'react';
 import CadenceInsightCard from '../components/ui/CadenceInsightCard';
 import { mockGoals, mockRider, cadenceInsights, USDF_LEVELS } from '../data/mock';
 import type { Milestone, DisciplineLevel, Goal } from '../data/mock';
+import { useMilestoneProgress } from '../hooks/useMilestoneProgress';
 
 // ─── Small readiness ring ──────────────────────────────────────────────────────
 
@@ -284,14 +285,15 @@ function MilestoneDetail({ milestone }: { milestone: Milestone }) {
 
 // ─── Goal readiness calculation ────────────────────────────────────────────────
 
-function goalReadinessPct(goal: Goal): number {
+function goalReadinessPct(goal: Goal, getEffective: (id: string, val: number) => number): number {
   const relevant = goal.currentDisciplineLevel
     ? goal.milestones.filter(m => m.disciplineLevel === goal.currentDisciplineLevel)
     : goal.milestones;
   if (relevant.length === 0) return 0;
   const total = relevant.reduce((sum, m) => {
-    if (m.state === 'mastered') return sum + 1;
-    return sum + m.ridesConsistent / m.ridesRequired;
+    const effective = getEffective(m.id, m.ridesConsistent);
+    if (m.state === 'mastered' || effective >= m.ridesRequired) return sum + 1;
+    return sum + effective / m.ridesRequired;
   }, 0);
   return Math.round((total / relevant.length) * 100);
 }
@@ -419,11 +421,24 @@ export default function JourneyPage() {
   const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<DisciplineLevel | null>(null);
   const [showAddGoal, setShowAddGoal] = useState(false);
+  const { getEffectiveProgress } = useMilestoneProgress();
 
   // Find the selected milestone across all goals (for Cadence insight + detail panel)
   const selectedMilestone = selectedMilestoneId
     ? mockGoals.flatMap(g => g.milestones).find(m => m.id === selectedMilestoneId)
     : null;
+
+  // Apply localStorage progress overrides to a milestone
+  const resolvedMilestone = (m: Milestone): Milestone => {
+    const effective = getEffectiveProgress(m.id, m.ridesConsistent);
+    if (effective === m.ridesConsistent) return m;
+    const newState = effective >= m.ridesRequired
+      ? 'mastered' as const
+      : m.state === 'untouched' && effective > 0
+      ? 'working' as const
+      : m.state;
+    return { ...m, ridesConsistent: effective, state: newState };
+  };
 
   const cadenceText = selectedMilestone?.cadenceNote ?? cadenceInsights.journey;
 
@@ -464,7 +479,7 @@ export default function JourneyPage() {
       {/* ─── Goal cards ─── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '0 20px' }}>
         {mockGoals.map(goal => {
-          const pct = goalReadinessPct(goal);
+          const pct = goalReadinessPct(goal, getEffectiveProgress);
           const typeMeta = goalTypeMeta[goal.type];
           const currentLevelDef = goal.currentDisciplineLevel
             ? USDF_LEVELS.find(l => l.id === goal.currentDisciplineLevel)
@@ -611,7 +626,7 @@ export default function JourneyPage() {
                   {currentLevelMilestones.map(milestone => (
                     <SkillRing
                       key={milestone.id}
-                      milestone={milestone}
+                      milestone={resolvedMilestone(milestone)}
                       onClick={() => handleSkillTap(goal.id, milestone.id)}
                       isActive={selectedMilestoneId === milestone.id}
                     />
@@ -647,7 +662,7 @@ export default function JourneyPage() {
                     {reachingAheadMilestones.map(milestone => (
                       <div key={milestone.id} style={{ position: 'relative' }}>
                         <SkillRing
-                          milestone={milestone}
+                          milestone={resolvedMilestone(milestone)}
                           onClick={() => handleSkillTap(goal.id, milestone.id)}
                           isActive={selectedMilestoneId === milestone.id}
                         />
