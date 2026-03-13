@@ -9,11 +9,13 @@ const signalConfig = {
   'needs-work': { color: '#C4714A', symbol: '↓', label: 'Needs work' },
 };
 
-const rideTypeLabel = {
-  training:    '🐎 Training',
+const rideTypeLabel: Record<string, string> = {
+  training:    '🐎 Practice',
   lesson:      '👩‍🏫 Lesson',
+  practice:    '🐎 Practice',
   'mock-test': '📋 Mock Test',
-  hack:        '🌳 Hack',
+  hack:        '🌲 Ride Out',
+  'ride-out':  '🌲 Ride Out',
 };
 
 export default function RidesPage() {
@@ -22,7 +24,7 @@ export default function RidesPage() {
   const [logNote, setLogNote] = useState('');
   const [logFocus, setLogFocus] = useState(mockGoal.milestones[0].id);
   const [logDuration, setLogDuration] = useState('45');
-  const [logType, setLogType] = useState<'training' | 'lesson' | 'hack'>('training');
+  const [logType, setLogType] = useState<'lesson' | 'practice' | 'ride-out'>('practice');
   const [logSubmitted, setLogSubmitted] = useState(false);
   const [logVideoFile, setLogVideoFile] = useState<File | null>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -99,24 +101,27 @@ export default function RidesPage() {
               </div>
 
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 600, color: '#B5A898', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif", display: 'block', marginBottom: '8px' }}>Ride type</label>
+                <label style={{ fontSize: '11px', fontWeight: 600, color: '#B5A898', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif", display: 'block', marginBottom: '8px' }}>Type of ride</label>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  {(['training', 'lesson', 'hack'] as const).map(type => (
-                    <button
-                      key={type}
-                      onClick={() => setLogType(type)}
-                      style={{
-                        flex: 1, padding: '8px 4px',
-                        borderRadius: '10px', border: 'none', cursor: 'pointer',
-                        background: logType === type ? '#8C5A3C' : '#F0EBE4',
-                        color: logType === type ? '#FAF7F3' : '#7A6B5D',
-                        fontSize: '12px', fontWeight: 500,
-                        fontFamily: "'DM Sans', sans-serif",
-                      }}
-                    >
-                      {rideTypeLabel[type]}
-                    </button>
-                  ))}
+                  {(['lesson', 'practice', 'ride-out'] as const).map(type => {
+                    const labels = { lesson: '👩‍🏫 Lesson', practice: '🐎 Practice', 'ride-out': '🌲 Ride Out' };
+                    return (
+                      <button
+                        key={type}
+                        onClick={() => setLogType(type)}
+                        style={{
+                          flex: 1, padding: '8px 4px',
+                          borderRadius: '10px', border: 'none', cursor: 'pointer',
+                          background: logType === type ? '#8C5A3C' : '#F0EBE4',
+                          color: logType === type ? '#FAF7F3' : '#7A6B5D',
+                          fontSize: '12px', fontWeight: 500,
+                          fontFamily: "'DM Sans', sans-serif",
+                        }}
+                      >
+                        {labels[type]}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -137,7 +142,9 @@ export default function RidesPage() {
               </div>
 
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 600, color: '#B5A898', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif", display: 'block', marginBottom: '8px' }}>Focus milestone</label>
+                <label style={{ fontSize: '11px', fontWeight: 600, color: '#B5A898', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif", display: 'block', marginBottom: '8px' }}>
+                  Focus {logType === 'practice' ? '(optional)' : ''}
+                </label>
                 <select
                   value={logFocus}
                   onChange={e => setLogFocus(e.target.value)}
@@ -149,6 +156,7 @@ export default function RidesPage() {
                     background: '#FAF7F3', outline: 'none',
                   }}
                 >
+                  <option value="open">I'll see what comes up</option>
                   {mockGoal.milestones.map(m => (
                     <option key={m.id} value={m.id}>{m.name}</option>
                   ))}

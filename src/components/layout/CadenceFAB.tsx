@@ -87,26 +87,21 @@ export default function CadenceFAB({ onClick }: CadenceFABProps) {
           pointerEvents: 'none',
         }} />
 
-        {/* Inner orb — breathes with the organic timing */}
+        {/* Waveform icon — Cadence listening, breathes with animation */}
         <div style={{
-          width: '24px',
-          height: '24px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle at 32% 32%, #E2C384 0%, #C9A96E 55%, #A8834E 100%)',
-          boxShadow: '0 0 12px rgba(201,169,110,0.45), inset 0 1px 2px rgba(255,255,255,0.18)',
-          animation: 'cadence-breathe 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          animation: 'cadence-breathe 3.2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-          {/* Pupil */}
-          <div style={{
-            width: '7px',
-            height: '7px',
-            borderRadius: '50%',
-            background: '#1C1510',
-            opacity: 0.85,
-          }} />
+          <svg width="26" height="18" viewBox="0 0 26 18" fill="none">
+            <rect x="0"  y="7" width="3" height="4"  rx="1.5" fill="rgba(201,169,110,0.50)" />
+            <rect x="5"  y="3" width="3" height="12" rx="1.5" fill="rgba(201,169,110,0.75)" />
+            <rect x="10" y="0" width="3" height="18" rx="1.5" fill="#C9A96E" />
+            <rect x="15" y="4" width="3" height="10" rx="1.5" fill="rgba(201,169,110,0.70)" />
+            <rect x="20" y="6" width="3" height="6"  rx="1.5" fill="rgba(201,169,110,0.45)" />
+            <rect x="23" y="8" width="3" height="2"  rx="1"   fill="rgba(201,169,110,0.25)" />
+          </svg>
         </div>
       </button>
     </div>

@@ -277,23 +277,26 @@ export default function InsightsPage() {
         </p>
 
         <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: '8px',
-          background: '#FFFFFF', borderRadius: '12px', padding: '8px 14px',
+          background: '#FFFFFF', borderRadius: '14px', padding: '12px 16px',
           boxShadow: '0 2px 8px rgba(26,20,14,0.06)', marginBottom: '16px',
+          display: 'flex', alignItems: 'center', gap: '12px',
         }}>
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#7D9B76' }} />
-          <span style={{ fontSize: '13px', color: '#1A140E', fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>
-            Overall score
-          </span>
-          <span style={{
-            fontFamily: "'DM Mono', monospace", fontSize: '15px',
-            fontWeight: 500, color: '#8C5A3C', marginLeft: '4px',
-          }}>
-            {overallScore}%
-          </span>
-          <span style={{ fontSize: '10px', color: '#7D9B76', fontFamily: "'DM Sans', sans-serif" }}>
-            ↑ 4wk
-          </span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#B5A898', fontFamily: "'DM Sans', sans-serif", marginBottom: '2px' }}>
+              Development Readiness
+            </div>
+            <div style={{ fontSize: '11.5px', color: '#7A6B5D', fontFamily: "'DM Sans', sans-serif" }}>
+              How ready you are to progress to the next milestone
+            </div>
+          </div>
+          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '22px', fontWeight: 500, color: '#8C5A3C', lineHeight: 1 }}>
+              {overallScore}%
+            </div>
+            <div style={{ fontSize: '10px', color: '#7D9B76', fontFamily: "'DM Sans', sans-serif", marginTop: '2px' }}>
+              ↑ 4wk
+            </div>
+          </div>
         </div>
       </div>
 
@@ -354,7 +357,7 @@ export default function InsightsPage() {
 
             <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 10px rgba(26,20,14,0.05)' }}>
               <div style={{ fontSize: '10px', fontWeight: 600, color: '#B5A898', letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif", marginBottom: '12px' }}>
-                Score Over Time (0–100%)
+                Readiness Over Time (0–100%)
               </div>
               <TrendChart data={biometricsTrend} activeMetrics={activeMetrics} />
               <div style={{ fontSize: '9px', color: '#B5A898', fontFamily: "'DM Mono', monospace", marginTop: '8px', textAlign: 'right' }}>
