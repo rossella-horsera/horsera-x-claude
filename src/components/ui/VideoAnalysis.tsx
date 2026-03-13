@@ -1593,7 +1593,7 @@ export default function VideoAnalysis({
           frameCount={analysisResult.frameCount}
         />
       ) : (
-        /* Mock skeleton — click to upload */
+        /* Mock skeleton — click to upload / re-analyse */
         <div style={{ position: 'relative', background: '#1C1510', overflow: 'hidden' }}>
           <div style={{ cursor: 'pointer', position: 'relative' }} onClick={triggerFileSelect}>
             <MockVideoFrame biometrics={mockBiometrics} />
@@ -1608,10 +1608,10 @@ export default function VideoAnalysis({
                 borderRadius: '10px', padding: '7px 15px', textAlign: 'center',
               }}>
                 <div style={{ fontSize: '11.5px', color: '#C9A96E', fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>
-                  Upload your ride video
+                  {hasVideo ? 'Tap to re-run analysis' : 'Add a video to this ride'}
                 </div>
                 <div style={{ fontSize: '9px', color: 'rgba(201,169,110,0.6)', fontFamily: "'DM Mono', monospace", marginTop: '2px' }}>
-                  Cadence will analyse your position
+                  {hasVideo ? 'Select from camera roll · analysed on device' : 'Cadence will analyse your position'}
                 </div>
               </div>
             </div>
