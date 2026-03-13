@@ -1,9 +1,11 @@
+import { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CadenceInsightCard from '../components/ui/CadenceInsightCard';
 import VideoAnalysis from '../components/ui/VideoAnalysis';
 import { useVideoAnalysis } from '../hooks/useVideoAnalysis';
 import { generateInsights } from '../lib/poseAnalysis';
-import { mockRides, mockGoal } from '../data/mock';
+import { mockRides, mockGoal, mockRider } from '../data/mock';
+import { supabase } from '../integrations/supabase/client';
 
 const signalConfig = {
   improving:    { color: '#7D9B76', symbol: '↑', label: 'Improving' },
@@ -30,6 +32,48 @@ export default function RideDetailPage() {
   // Previous ride biometrics — used by the analysis hook to compute trend arrows
   const prevRide = mockRides.find(r => r.id !== ride.id && r.biometrics);
   const { status, progress, result, error, analyzeVideo } = useVideoAnalysis(prevRide?.biometrics);
+
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [generatingLink, setGeneratingLink] = useState(false);
+
+  const inviteTrainerFeedback = useCallback(async () => {
+    if (generatingLink) return;
+    setGeneratingLink(true);
+
+    try {
+      const d2 = new Date(ride.date);
+      const dateStr2 = d2.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+
+      // Insert a feedback_links row in Supabase
+      const { data, error } = await supabase
+        .from('feedback_links')
+        .insert({
+          ride_id: ride.id,
+          rider_name: mockRider.firstName,
+          ride_date: dateStr2,
+          ride_focus: ride.focusMilestone,
+          ride_duration: ride.duration,
+          rider_reflection: ride.reflection ?? null,
+        })
+        .select('id')
+        .single();
+
+      if (error || !data) throw error;
+
+      const link = `${window.location.origin}/feedback/${data.id}`;
+      await navigator.clipboard.writeText(link);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 3000);
+    } catch {
+      // Fallback: copy a placeholder link
+      const fallbackLink = `${window.location.origin}/feedback/demo-link`;
+      await navigator.clipboard.writeText(fallbackLink).catch(() => {});
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 3000);
+    } finally {
+      setGeneratingLink(false);
+    }
+  }, [ride, generatingLink]);
 
   const d = new Date(ride.date);
   const dateStr = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -127,6 +171,43 @@ export default function RideDetailPage() {
               "{ride.trainerFeedback}"
             </p>
           </div>
+        )}
+
+        {/* Invite trainer feedback */}
+        {!ride.trainerFeedback && (
+          <button
+            onClick={inviteTrainerFeedback}
+            disabled={generatingLink}
+            style={{
+              width: '100%', textAlign: 'left',
+              background: linkCopied ? '#EFF6EF' : '#FFFFFF',
+              borderRadius: '14px', padding: '13px 16px',
+              border: `1.5px dashed ${linkCopied ? '#7D9B76' : '#EDE7DF'}`,
+              cursor: generatingLink ? 'wait' : 'pointer',
+              display: 'flex', alignItems: 'center', gap: '10px',
+              boxShadow: '0 1px 6px rgba(26,20,14,0.04)',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <div style={{
+              width: 32, height: 32, borderRadius: '8px',
+              background: linkCopied ? '#7D9B76' : '#F0EBE4',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              {linkCopied
+                ? <span style={{ fontSize: '14px' }}>✓</span>
+                : <span style={{ fontSize: '14px' }}>🔗</span>
+              }
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '13px', fontWeight: 500, color: linkCopied ? '#7D9B76' : '#1A140E', fontFamily: "'DM Sans', sans-serif", marginBottom: '1px' }}>
+                {linkCopied ? 'Link copied — share with your trainer' : 'Invite trainer feedback'}
+              </div>
+              <div style={{ fontSize: '11px', color: '#B5A898', fontFamily: "'DM Sans', sans-serif" }}>
+                {linkCopied ? 'Paste it into WhatsApp, email, or SMS' : 'Generate a link your trainer can open — no account needed'}
+              </div>
+            </div>
+          </button>
         )}
 
         {ride.cadenceInsight && (

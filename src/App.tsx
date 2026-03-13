@@ -10,9 +10,27 @@ import RidesPage from "./pages/RidesPage";
 import RideDetailPage from "./pages/RideDetailPage";
 import InsightsPage from "./pages/InsightsPage";
 import SettingsPage from "./pages/SettingsPage";
+import FeedbackPage from "./pages/FeedbackPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+// AppShell wraps all authenticated app routes
+function AppRoutes() {
+  return (
+    <AppShell>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/journey" element={<JourneyPage />} />
+        <Route path="/rides" element={<RidesPage />} />
+        <Route path="/rides/:id" element={<RideDetailPage />} />
+        <Route path="/insights" element={<InsightsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </AppShell>
+  );
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -20,17 +38,12 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppShell>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/journey" element={<JourneyPage />} />
-            <Route path="/rides" element={<RidesPage />} />
-            <Route path="/rides/:id" element={<RideDetailPage />} />
-            <Route path="/insights" element={<InsightsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AppShell>
+        <Routes>
+          {/* Public route — no AppShell, no nav bar */}
+          <Route path="/feedback/:linkId" element={<FeedbackPage />} />
+          {/* All other routes get AppShell */}
+          <Route path="*" element={<AppRoutes />} />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
