@@ -29,18 +29,23 @@ function AppShellInner({ children }: AppShellProps) {
         scrollbar-width: none;
         @keyframes cadence-breathe {
           0%   { transform: scale(1);    opacity: 1; }
-          38%  { transform: scale(1.13); opacity: 0.85; }
+          45%  { transform: scale(1.22); opacity: 0.80; }
           100% { transform: scale(1);    opacity: 1; }
         }
         @keyframes cadence-glow {
           0%, 100% { box-shadow: 0 4px 20px rgba(0,0,0,0.28), 0 0 0 1px rgba(201,169,110,0.18), 0 0 0px rgba(201,169,110,0); }
-          38%  { box-shadow: 0 4px 20px rgba(0,0,0,0.28), 0 0 0 1px rgba(201,169,110,0.50), 0 0 28px rgba(201,169,110,0.32); }
-          100% { box-shadow: 0 4px 20px rgba(0,0,0,0.28), 0 0 0 1px rgba(201,169,110,0.18), 0 0 0px rgba(201,169,110,0); }
+          45%  { box-shadow: 0 4px 24px rgba(0,0,0,0.32), 0 0 0 1px rgba(201,169,110,0.60), 0 0 36px rgba(201,169,110,0.40); }
         }
         @keyframes cadence-ripple {
-          0%   { transform: scale(1);   opacity: 0.45; }
-          80%  { transform: scale(1.85); opacity: 0; }
-          100% { transform: scale(1.85); opacity: 0; }
+          0%   { transform: scale(1);    opacity: 0.60; }
+          75%  { transform: scale(2.0);  opacity: 0; }
+          100% { transform: scale(2.0);  opacity: 0; }
+        }
+        @keyframes cadence-ripple-delay {
+          0%, 40% { transform: scale(1);   opacity: 0; }
+          50%      { transform: scale(1);   opacity: 0.50; }
+          90%      { transform: scale(1.9); opacity: 0; }
+          100%     { transform: scale(1.9); opacity: 0; }
         }
       `}</style>
 

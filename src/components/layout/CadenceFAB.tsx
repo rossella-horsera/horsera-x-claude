@@ -66,14 +66,24 @@ export default function CadenceFAB({ onClick }: CadenceFABProps) {
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.07)'; }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
       >
-        {/* Sonar ripple — expands outward and fades */}
+        {/* Sonar ripple 1 — expands outward and fades */}
+        <div style={{
+          position: 'absolute',
+          width: '52px',
+          height: '52px',
+          borderRadius: '50%',
+          border: '1.5px solid rgba(201,169,110,0.55)',
+          animation: 'cadence-ripple 3.2s cubic-bezier(0.2, 0, 0.8, 1) infinite',
+          pointerEvents: 'none',
+        }} />
+        {/* Sonar ripple 2 — offset by half cycle for continuous pulse */}
         <div style={{
           position: 'absolute',
           width: '52px',
           height: '52px',
           borderRadius: '50%',
           border: '1.5px solid rgba(201,169,110,0.40)',
-          animation: 'cadence-ripple 4s cubic-bezier(0.2, 0, 0.8, 1) infinite',
+          animation: 'cadence-ripple-delay 3.2s cubic-bezier(0.2, 0, 0.8, 1) infinite',
           pointerEvents: 'none',
         }} />
 

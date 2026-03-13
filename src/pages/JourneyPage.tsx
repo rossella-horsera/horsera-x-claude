@@ -97,7 +97,7 @@ function SkillRing({ milestone, onClick, isActive }: {
         {milestone.state === 'working' && (
           <text x={size / 2} y={size / 2 + 4} textAnchor="middle" fontSize="11"
             fontFamily="'DM Mono', monospace" fill="#C9A96E" fontWeight="500">
-            {milestone.ridesConsistent}/{milestone.ridesRequired}
+            {Math.round(progress * 100)}%
           </text>
         )}
         {milestone.state === 'untouched' && (
@@ -277,10 +277,119 @@ const goalTypeMeta: Record<string, { label: string; bg: string; color: string }>
 
 // ─── Main page ─────────────────────────────────────────────────────────────────
 
+// ─── Add Goal modal ────────────────────────────────────────────────────────────
+
+const ACTIVE_DISCIPLINES = [
+  { id: 'dressage',    label: 'Dressage',    icon: '🎯', description: 'USDF levels from Intro through Grand Prix' },
+  { id: 'pony-club',  label: 'Pony Club',   icon: '🐴', description: 'D through A levels across all disciplines' },
+  { id: 'trail',      label: 'Trail Riding', icon: '🌲', description: 'Confidence, terrain, and trail skills' },
+];
+
+const COMING_SOON_DISCIPLINES = [
+  { id: 'hunter-jumper', label: 'Hunter / Jumper' },
+  { id: 'eventing',      label: 'Eventing' },
+  { id: 'western',       label: 'Western Dressage' },
+  { id: 'endurance',     label: 'Endurance' },
+  { id: 'custom',        label: 'Custom Goal' },
+];
+
+function AddGoalModal({ onClose }: { onClose: () => void }) {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      background: 'rgba(28,21,16,0.55)', backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }} onClick={onClose}>
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: '430px',
+          background: '#FAF7F3', borderRadius: '24px 24px 0 0',
+          padding: '24px 20px 40px',
+          boxShadow: '0 -8px 40px rgba(26,20,14,0.18)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '22px', fontWeight: 400, color: '#1A140E' }}>
+            Add a goal
+          </h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B5A898', fontSize: '22px', lineHeight: 1 }}>×</button>
+        </div>
+
+        <p style={{ fontSize: '13px', color: '#7A6B5D', fontFamily: "'DM Sans', sans-serif", marginBottom: '16px', lineHeight: 1.5 }}>
+          What are you working toward?
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+          {ACTIVE_DISCIPLINES.map(d => (
+            <button
+              key={d.id}
+              onClick={() => setSelected(d.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '14px',
+                padding: '14px 16px', borderRadius: '14px',
+                border: `1.5px solid ${selected === d.id ? '#8C5A3C' : '#EDE7DF'}`,
+                background: selected === d.id ? 'rgba(140,90,60,0.06)' : '#FFFFFF',
+                cursor: 'pointer', textAlign: 'left',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <span style={{ fontSize: '22px' }}>{d.icon}</span>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: '#1A140E', fontFamily: "'DM Sans', sans-serif" }}>{d.label}</div>
+                <div style={{ fontSize: '11.5px', color: '#B5A898', fontFamily: "'DM Sans', sans-serif" }}>{d.description}</div>
+              </div>
+              {selected === d.id && (
+                <div style={{ marginLeft: 'auto', width: 18, height: 18, borderRadius: '50%', background: '#8C5A3C', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ color: '#FAF7F3', fontSize: '11px' }}>✓</span>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+
+        <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#B5A898', fontFamily: "'DM Sans', sans-serif", marginBottom: '8px' }}>
+          Coming soon
+        </p>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
+          {COMING_SOON_DISCIPLINES.map(d => (
+            <span key={d.id} style={{
+              padding: '6px 12px', borderRadius: '20px',
+              background: '#F0EBE4', border: '1px solid #EDE7DF',
+              fontSize: '12px', color: '#B5A898',
+              fontFamily: "'DM Sans', sans-serif",
+            }}>
+              {d.label}
+            </span>
+          ))}
+        </div>
+
+        <button
+          disabled={!selected}
+          onClick={onClose}
+          style={{
+            width: '100%', background: selected ? '#8C5A3C' : '#EDE7DF',
+            color: selected ? '#FAF7F3' : '#B5A898',
+            border: 'none', borderRadius: '14px', padding: '14px',
+            fontSize: '14px', fontWeight: 600, cursor: selected ? 'pointer' : 'not-allowed',
+            fontFamily: "'DM Sans', sans-serif",
+            transition: 'all 0.15s ease',
+          }}
+        >
+          {selected ? `Start with ${ACTIVE_DISCIPLINES.find(d => d.id === selected)?.label}` : 'Select a discipline'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function JourneyPage() {
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<DisciplineLevel | null>(null);
+  const [showAddGoal, setShowAddGoal] = useState(false);
 
   // Find the selected milestone across all goals (for Cadence insight + detail panel)
   const selectedMilestone = selectedMilestoneId
@@ -301,6 +410,7 @@ export default function JourneyPage() {
 
   return (
     <div style={{ background: '#FAF7F3', minHeight: '100%', paddingBottom: '28px' }}>
+      {showAddGoal && <AddGoalModal onClose={() => setShowAddGoal(false)} />}
 
       {/* ─── Header ─── */}
       <div style={{ padding: '20px 20px 16px' }}>
@@ -575,12 +685,15 @@ export default function JourneyPage() {
         })}
 
         {/* ─── Add a goal placeholder ─── */}
-        <button style={{
-          width: '100%', padding: '16px',
-          border: '1.5px dashed #D4C9BC', borderRadius: '20px',
-          background: 'transparent', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-        }}>
+        <button
+          onClick={() => setShowAddGoal(true)}
+          style={{
+            width: '100%', padding: '16px',
+            border: '1.5px dashed #D4C9BC', borderRadius: '20px',
+            background: 'transparent', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+          }}
+        >
           <span style={{ fontSize: '18px', color: '#C4B8AC', lineHeight: 1 }}>+</span>
           <span style={{ fontSize: '13px', color: '#B5A898', fontFamily: "'DM Sans', sans-serif" }}>Add a goal</span>
         </button>

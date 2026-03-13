@@ -71,7 +71,7 @@ function HeroPlaceholder() {
           marginBottom: '4px',
           textShadow: '0 1px 8px rgba(0,0,0,0.30)',
         }}>
-          Good morning,<br />{mockRider.firstName}.
+          Good morning,<br /><span style={{ fontStyle: 'italic', color: '#C9A96E' }}>{mockRider.firstName}</span>.
         </h1>
         {activeMilestone && (
           <p style={{

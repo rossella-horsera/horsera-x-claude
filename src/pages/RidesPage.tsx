@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mockRides, mockGoal } from '../data/mock';
 import type { Ride } from '../data/mock';
@@ -24,6 +24,8 @@ export default function RidesPage() {
   const [logDuration, setLogDuration] = useState('45');
   const [logType, setLogType] = useState<'training' | 'lesson' | 'hack'>('training');
   const [logSubmitted, setLogSubmitted] = useState(false);
+  const [logVideoFile, setLogVideoFile] = useState<File | null>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogSubmit = () => {
     setLogSubmitted(true);
@@ -31,6 +33,7 @@ export default function RidesPage() {
       setLogSubmitted(false);
       setShowLogForm(false);
       setLogNote('');
+      setLogVideoFile(null);
     }, 2000);
   };
 
@@ -52,7 +55,7 @@ export default function RidesPage() {
               Rides
             </div>
             <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: '#B5A898' }}>
-              {mockRides.length} rides logged
+              {mockRides.length} rides
             </div>
           </div>
           <button
@@ -66,7 +69,7 @@ export default function RidesPage() {
               display: 'flex', alignItems: 'center', gap: 6,
             }}
           >
-            <span style={{ fontSize: '16px', lineHeight: 1 }}>+</span> Log Ride
+            <span style={{ fontSize: '16px', lineHeight: 1 }}>+</span> Record Ride
           </button>
         </div>
       </div>
@@ -82,7 +85,7 @@ export default function RidesPage() {
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ fontSize: '32px', marginBottom: '8px' }}>✓</div>
               <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '18px', color: '#8C5A3C' }}>
-                Ride logged.
+                Ride recorded.
               </div>
               <div style={{ fontSize: '12px', color: '#B5A898', fontFamily: "'DM Sans', sans-serif", marginTop: '4px' }}>
                 Cadence is analysing...
@@ -91,7 +94,7 @@ export default function RidesPage() {
           ) : (
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '18px', color: '#1A140E' }}>Log a Ride</div>
+                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '18px', color: '#1A140E' }}>Record a Ride</div>
                 <button onClick={() => setShowLogForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B5A898', fontSize: '20px' }}>×</button>
               </div>
 
@@ -170,19 +173,44 @@ export default function RidesPage() {
                 />
               </div>
 
-              <div style={{
-                border: '1.5px dashed #EDE7DF', borderRadius: '10px',
-                padding: '14px', textAlign: 'center', marginBottom: '18px',
-                cursor: 'pointer',
-              }}>
+              <div
+                onClick={() => videoInputRef.current?.click()}
+                style={{
+                  border: `1.5px dashed ${logVideoFile ? '#8C5A3C' : '#EDE7DF'}`,
+                  borderRadius: '10px',
+                  padding: '14px', textAlign: 'center', marginBottom: '18px',
+                  cursor: 'pointer',
+                  background: logVideoFile ? 'rgba(140,90,60,0.04)' : 'transparent',
+                }}
+              >
                 <div style={{ fontSize: '20px', marginBottom: '4px' }}>🎬</div>
-                <div style={{ fontSize: '12px', color: '#B5A898', fontFamily: "'DM Sans', sans-serif" }}>
-                  Upload video (optional)
-                </div>
-                <div style={{ fontSize: '11px', color: '#C9A96E', fontFamily: "'DM Sans', sans-serif", marginTop: '2px' }}>
-                  Cadence will analyse your position
-                </div>
+                {logVideoFile ? (
+                  <>
+                    <div style={{ fontSize: '12px', color: '#8C5A3C', fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>
+                      {logVideoFile.name}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#B5A898', fontFamily: "'DM Sans', sans-serif", marginTop: '2px' }}>
+                      Cadence will analyse after saving
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: '12px', color: '#B5A898', fontFamily: "'DM Sans', sans-serif" }}>
+                      Add a video (optional)
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#C9A96E', fontFamily: "'DM Sans', sans-serif", marginTop: '2px' }}>
+                      Cadence will analyse your position
+                    </div>
+                  </>
+                )}
               </div>
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/*"
+                style={{ display: 'none' }}
+                onChange={e => setLogVideoFile(e.target.files?.[0] ?? null)}
+              />
 
               <button
                 onClick={handleLogSubmit}
@@ -193,7 +221,7 @@ export default function RidesPage() {
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                Save Ride
+                Save &amp; Analyse
               </button>
             </>
           )}
