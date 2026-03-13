@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import BottomNav from './BottomNav';
 import CadenceFAB from './CadenceFAB';
 import { CadenceProvider, useCadence } from '../../context/CadenceContext';
+import { mockRider } from '../../data/mock';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -9,6 +11,7 @@ interface AppShellProps {
 
 function AppShellInner({ children }: AppShellProps) {
   const { openCadence } = useCadence();
+  const navigate = useNavigate();
 
   return (
     <div
@@ -73,6 +76,27 @@ function AppShellInner({ children }: AppShellProps) {
           alt="Horsera"
           style={{ height: '30px', width: 'auto', display: 'block' }}
         />
+        {/* Avatar — opens settings */}
+        <button
+          onClick={() => navigate('/settings')}
+          aria-label="Settings"
+          style={{
+            position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)',
+            width: 32, height: 32, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #C9A96E 0%, #8C5A3C 100%)',
+            border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 1px 4px rgba(140,90,60,0.25)',
+          }}
+        >
+          <span style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: '13px', color: '#FAF7F3', fontWeight: 400,
+            lineHeight: 1,
+          }}>
+            {mockRider.firstName.charAt(0)}
+          </span>
+        </button>
       </header>
 
       <main

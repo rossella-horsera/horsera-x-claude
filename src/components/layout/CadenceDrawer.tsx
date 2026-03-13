@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { mockRider, cadenceInsights } from '../../data/mock';
 
 interface Message {
@@ -46,7 +46,34 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<{ start: () => void; stop: () => void; abort: () => void; onresult: ((e: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => void) | null; onerror: (() => void) | null; onend: (() => void) | null } | null>(null);
+
+  const toggleVoice = useCallback(() => {
+    // Web Speech API — only available in Chrome/Safari on device
+    const SpeechRecognition = (window as unknown as { SpeechRecognition?: new () => typeof recognitionRef.current; webkitSpeechRecognition?: new () => typeof recognitionRef.current }).SpeechRecognition
+      || (window as unknown as { SpeechRecognition?: new () => typeof recognitionRef.current; webkitSpeechRecognition?: new () => typeof recognitionRef.current }).webkitSpeechRecognition;
+    if (!SpeechRecognition) return; // silently skip on unsupported browsers
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      setInput(transcript);
+      setIsListening(false);
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    recognition.start();
+    setIsListening(true);
+  }, [isListening]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -217,21 +244,45 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
           alignItems: 'flex-end',
           background: '#FAF7F3',
         }}>
+          {/* Voice mic button */}
+          <button
+            onClick={toggleVoice}
+            aria-label={isListening ? 'Stop listening' : 'Speak to Cadence'}
+            style={{
+              width: 40, height: 40,
+              borderRadius: '50%',
+              background: isListening ? '#6B7FA3' : '#F0EBE4',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'background 0.15s ease',
+              flexShrink: 0,
+              animation: isListening ? 'cadence-breathe 1.2s ease-in-out infinite' : 'none',
+            }}
+          >
+            <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+              <rect x="4" y="0" width="6" height="9" rx="3" fill={isListening ? '#FAF7F3' : '#B5A898'} />
+              <path d="M1 8C1 11.314 3.686 14 7 14C10.314 14 13 11.314 13 8" stroke={isListening ? '#FAF7F3' : '#B5A898'} strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="7" y1="14" x2="7" y2="16" stroke={isListening ? '#FAF7F3' : '#B5A898'} strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && sendMessage(input)}
-            placeholder="Ask Cadence anything..."
+            placeholder={isListening ? 'Listening…' : 'Ask Cadence anything…'}
             style={{
               flex: 1,
               padding: '10px 14px',
               borderRadius: '12px',
-              border: '1.5px solid #EDE7DF',
+              border: `1.5px solid ${isListening ? '#6B7FA3' : '#EDE7DF'}`,
               background: '#FFFFFF',
               fontSize: '14px',
               color: '#1A140E',
               fontFamily: "'DM Sans', sans-serif",
               outline: 'none',
+              transition: 'border-color 0.15s ease',
             }}
           />
           <button

@@ -177,6 +177,34 @@ A record of significant product, design, and architectural decisions — capturi
 
 ---
 
+## Session — 2026-03-13
+
+### 2026-03-13 — Ride types renamed: Lesson / Practice / Ride Out
+**Decision:** The three ride types are now: Lesson (with a trainer), Practice (targeted milestone work, milestone optional), Ride Out (hack/trail/free schooling). "Training" and "Hack" removed.
+**Why:** "Training" was ambiguous (all rides are training). "Hack" is UK-specific slang not universal across disciplines. "Practice" feels active and developmental. "Ride Out" is evocative — it's what equestrians actually say. Milestone selection in Practice is now optional with a "I'll see what comes up" default — removing friction for spontaneous sessions.
+
+### 2026-03-13 — Overall Score renamed to Development Readiness
+**Decision:** The aggregate score on the Insights screen is now called "Development Readiness" with a sub-label: "How ready you are to progress to the next milestone."
+**Why:** "Score" implies a grade. Riders at 73% feel like they're failing. "Development Readiness" reframes the number as forward-looking: "I'm 73% ready to progress." Same number, completely different emotional response. Also more honest about what the metric actually represents.
+
+### 2026-03-13 — Record Ride promoted to center nav
+**Decision:** A raised Cognac circle button at the center of the bottom nav triggers the Record Ride flow. Nav becomes: Home | Journey | [+ Record] | Rides | Insights (5 total).
+**Why:** The most valuable action in Horsera is recording a ride — every other insight depends on it. Burying it in the Rides screen meant it competed visually with the ride list. A center raised button (the iOS/Android standard for primary actions) makes the intent clear: "this is what you should be doing after every ride."
+
+### 2026-03-13 — Cadence icon redesigned: waveform SVG replaces orb/pupil
+**Decision:** The Cadence FAB icon is now a 6-bar audio waveform (ascending + descending bars) in Champagne gold. The orb-with-pupil was removed.
+**Why:** The orb design was misread as a vinyl record or a camera lens — neither is appropriate for an AI advisor. A waveform communicates "listening" and "audio/voice" — the two things Cadence does. It's also distinctive: no other equestrian app has a waveform button. The breathe animation now pulses the waveform in and out, reinforcing the "alive and listening" feeling.
+
+### 2026-03-13 — Trainer feedback: V1.5 = link-based, V2 = full portal
+**Decision:** For V1.5, trainer feedback uses a shareable link generated per ride. Trainer opens the link in any browser, sees the ride, submits text feedback. No trainer account required. Full trainer portal (proactive access, own account, multi-rider view) = V2.
+**Why:** Building a full trainer portal in MVP requires designing and implementing a second persona's entire app experience. The link-based approach delivers 80% of the value (trainer feedback in the rider's record) at 10% of the cost. Validates trainer engagement before investing in a full portal. Privacy: the shareable link has a short expiry and is revocable.
+
+### 2026-03-13 — Cadence AI: connect real Claude API (haiku model)
+**Decision:** Replace keyword-matching mock with a real Claude API integration using claude-haiku-3 with streaming. System prompt establishes Cadence's personality + rider context. Per-user daily limit of 20 messages as a cost guardrail.
+**Why:** Cost at current scale is negligible (~$4-6/month at 100 DAU). Continuing to use keyword matching creates a false impression of AI capability and risks Rossella sharing the app publicly before it actually works. The real API with a strong system prompt will immediately feel premium. Haiku is fast and accurate for equestrian Q&A.
+
+---
+
 *When adding a new decision, use this format:*
 
 *### YYYY-MM-DD — Decision title*
