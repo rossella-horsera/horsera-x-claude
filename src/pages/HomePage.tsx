@@ -6,7 +6,6 @@ import {
   mockGoal,
   mockRides,
   mockWeek,
-  biometricsTrend,
   cadenceInsights,
 } from '../data/mock';
 
@@ -80,7 +79,9 @@ function HeroPlaceholder() {
             color: 'rgba(250,247,243,0.75)',
             marginTop: '6px',
           }}>
-            Focus: {activeMilestone.name} · {activeMilestone.ridesConsistent}/{activeMilestone.ridesRequired} rides
+            {activeMilestone.ridesRequired - activeMilestone.ridesConsistent === 1
+              ? `1 ride from mastering ${activeMilestone.name}.`
+              : `${activeMilestone.ridesRequired - activeMilestone.ridesConsistent} rides from mastering ${activeMilestone.name}.`}
           </p>
         )}
       </div>
@@ -131,7 +132,6 @@ export default function HomePage() {
 
   const latestRide = mockRides[0];
   const activeMilestone = mockGoal.milestones.find(m => m.state === 'working');
-  const latestBiometrics = biometricsTrend[biometricsTrend.length - 1];
   const ridesThisWeek = mockWeek.filter(d => d.ridden).length;
 
   const signalConfig = {
@@ -139,13 +139,6 @@ export default function HomePage() {
     consistent:   { color: '#C9A96E', symbol: '→', label: 'Consistent' },
     'needs-work': { color: '#C4714A', symbol: '↓', label: 'Needs work' },
   };
-
-  const metricTiles = [
-    { label: 'Lower Leg',  value: Math.round(latestBiometrics.lowerLeg * 100),  color: '#8C5A3C' },
-    { label: 'Reins',      value: Math.round(latestBiometrics.reins * 100),      color: '#C9A96E' },
-    { label: 'Core',       value: Math.round(latestBiometrics.core * 100),       color: '#7D9B76' },
-    { label: 'Posture',    value: Math.round(latestBiometrics.upperBody * 100),  color: '#6B7FA3' },
-  ];
 
   return (
     <div style={{ background: '#FAF7F3', minHeight: '100%' }}>
@@ -184,56 +177,25 @@ export default function HomePage() {
             </p>
             <p style={{
               fontSize: '12px', color: 'rgba(201,169,110,0.85)',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'DM Sans', sans-serif", marginBottom: '8px',
             }}>
-              {activeMilestone.performanceTasks[0]} · {activeMilestone.ridesConsistent}/{activeMilestone.ridesRequired} rides consistent →
+              {activeMilestone.ridesConsistent}/{activeMilestone.ridesRequired} rides consistent →
             </p>
+            {(activeMilestone.cadenceNote || activeMilestone.exercises[0]) && (
+              <p style={{
+                fontSize: '11.5px', color: 'rgba(250,247,243,0.65)',
+                fontFamily: "'DM Sans', sans-serif",
+                borderTop: '1px solid rgba(250,247,243,0.12)',
+                paddingTop: '8px', lineHeight: 1.5,
+              }}>
+                {activeMilestone.cadenceNote ?? `Today: ${activeMilestone.exercises[0].name}`}
+              </p>
+            )}
           </button>
         )}
 
         {/* ── Cadence insight ── */}
         <CadenceInsightCard text={cadenceInsights.home} />
-
-        {/* ── Your Position snapshot ── */}
-        <section>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <p style={{
-              fontSize: '10px', fontWeight: 600, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: '#B5A898',
-              fontFamily: "'DM Sans', sans-serif",
-            }}>
-              Your Position
-            </p>
-            <button
-              onClick={() => navigate('/insights')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '11px', color: '#8C5A3C', fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}
-            >
-              View trends →
-            </button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-            {metricTiles.map(tile => (
-              <div key={tile.label} style={{
-                background: '#FFFFFF',
-                borderRadius: '14px',
-                padding: '10px 8px',
-                textAlign: 'center',
-                boxShadow: '0 1px 6px rgba(26,20,14,0.05)',
-              }}>
-                <p style={{
-                  fontFamily: "'DM Mono', monospace",
-                  fontSize: '17px', fontWeight: 500,
-                  color: tile.color, marginBottom: '3px',
-                }}>
-                  {tile.value}
-                </p>
-                <p style={{ fontSize: '9px', color: '#B5A898', fontFamily: "'DM Sans', sans-serif" }}>
-                  {tile.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {/* ── Most recent ride ── */}
         {latestRide && (

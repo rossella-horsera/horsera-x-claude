@@ -66,6 +66,11 @@ export interface BiometricsSnapshot {
   pelvisStability:     number;
 }
 
+export interface MilestoneDeliverable {
+  task: string;
+  pct: number; // 0–100 mastery percentage
+}
+
 export interface Milestone {
   id: string;
   name: string;
@@ -79,6 +84,7 @@ export interface Milestone {
   exercises: Exercise[];
   description: string;
   cadenceNote?: string; // context-sensitive Cadence insight when this skill is selected
+  deliverables?: MilestoneDeliverable[]; // per-component mastery breakdown
 }
 
 export interface Exercise {
@@ -246,6 +252,12 @@ const usdtMilestones: Milestone[] = [
     exercises: exercises['lower-leg-stability'],
     description: 'The 20m circle is the core Training Level movement. It tests rhythm, bend, and consistent contact. Lower leg stability keeps you anchored through the arc; steady reins keep Allegra soft and forward.',
     cadenceNote: '3 of 5 rides showing consistent circle geometry. The right rein is your weaker side — your lower leg tends to drift forward, breaking the bend. Try weighting the right stirrup through the arc.',
+    deliverables: [
+      { task: 'Consistent rhythm throughout the arc', pct: 72 },
+      { task: 'Correct bend on left rein', pct: 80 },
+      { task: 'Correct bend on right rein', pct: 45 },
+      { task: 'Steady rein contact at all times', pct: 60 },
+    ],
   },
   {
     id: 'ms-002',
@@ -260,6 +272,12 @@ const usdtMilestones: Milestone[] = [
     exercises: exercises['rein-steadiness'],
     description: 'Free walk is one of the highest-weighted movements in Training Level tests. It requires you to gradually yield the rein while Allegra stretches forward and down — a true test of rein elasticity and trust.',
     cadenceNote: 'Almost mastered — 4 of 5. The tunnel rein exercise has clearly worked. One more ride where the yield is gradual and Allegra tracks up, and this is done.',
+    deliverables: [
+      { task: 'Gradual rein yield without dropping contact', pct: 85 },
+      { task: 'Horse stretches forward and down on yield', pct: 78 },
+      { task: 'Rhythm and direction maintained throughout', pct: 90 },
+      { task: 'Smooth re-take of contact at walk', pct: 72 },
+    ],
   },
   {
     id: 'ms-003',
@@ -274,6 +292,12 @@ const usdtMilestones: Milestone[] = [
     exercises: exercises['core-stability'],
     description: 'A clean canter transition requires core stability to absorb the gait change without bracing, and a quiet lower leg to give the aid without disturbing the hind leg. Your core work unlocked this.',
     cadenceNote: 'Mastered. Canter transitions have been clean and balanced for 5 consecutive rides. Your core stability is carrying you through — this is now a genuine strength.',
+    deliverables: [
+      { task: 'Clean upward transition at trot marker', pct: 95 },
+      { task: 'Balanced 20m canter circle (left)', pct: 92 },
+      { task: 'Balanced 20m canter circle (right)', pct: 88 },
+      { task: 'Smooth downward transition at marker', pct: 90 },
+    ],
   },
   {
     id: 'ms-004',
@@ -315,6 +339,12 @@ const usdtMilestones: Milestone[] = [
     exercises: [],
     description: 'Leg yield is the first lateral movement required at First Level. The horse moves forward and sideways, maintaining rhythm. Your lower leg stability and symmetry work is the direct foundation for this.',
     cadenceNote: 'You\'re already exploring First Level work while consolidating Training Level — that\'s how riders develop. Early days (1/5) but the instinct is right. Your symmetry work feeds directly into this.',
+    deliverables: [
+      { task: 'Shoulder-fore position maintained on approach', pct: 35 },
+      { task: 'Forward and sideways movement in rhythm', pct: 25 },
+      { task: 'Consistent angle across the diagonal', pct: 20 },
+      { task: 'Straight exit onto track at end of movement', pct: 40 },
+    ],
   },
 ];
 

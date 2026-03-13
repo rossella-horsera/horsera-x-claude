@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { biometricsTrend, mockGoal, cadenceInsights, mockRides } from '../data/mock';
+import { biometricsTrend, cadenceInsights, mockRides } from '../data/mock';
 import CadenceInsightCard from '../components/ui/CadenceInsightCard';
 
-type TabId = 'trends' | 'milestones' | 'patterns';
+type TabId = 'position' | 'scales' | 'patterns';
 
 const METRIC_CONFIG = [
   { key: 'lowerLeg',   label: 'Lower Leg',   color: '#8C5A3C' },
@@ -237,7 +237,7 @@ function PatternsTab() {
 }
 
 export default function InsightsPage() {
-  const [activeTab, setActiveTab] = useState<TabId>('trends');
+  const [activeTab, setActiveTab] = useState<TabId>('position');
   const [activeMetrics, setActiveMetrics] = useState<Set<MetricKey>>(
     new Set(['lowerLeg', 'reins', 'core'])
   );
@@ -260,8 +260,8 @@ export default function InsightsPage() {
   );
 
   const tabs: { id: TabId; label: string }[] = [
-    { id: 'trends', label: 'Trends' },
-    { id: 'milestones', label: 'Milestones' },
+    { id: 'position', label: 'Your Position' },
+    { id: 'scales', label: 'The Scales' },
     { id: 'patterns', label: 'Patterns' },
   ];
 
@@ -328,7 +328,7 @@ export default function InsightsPage() {
           ))}
         </div>
 
-        {activeTab === 'trends' && (
+        {activeTab === 'position' && (
           <>
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               {METRIC_CONFIG.map(({ key, label, color }) => {
@@ -376,57 +376,108 @@ export default function InsightsPage() {
           </>
         )}
 
-        {activeTab === 'milestones' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {mockGoal.milestones.map(ms => {
-              const stateColor = ms.state === 'mastered' ? '#7D9B76' : ms.state === 'working' ? '#C9A96E' : '#EDE7DF';
-              const progress = ms.state === 'mastered' ? 1 : ms.ridesConsistent / ms.ridesRequired;
-              return (
-                <div key={ms.id} style={{
-                  background: '#FFFFFF', borderRadius: '16px', padding: '14px 16px',
-                  boxShadow: '0 2px 10px rgba(26,20,14,0.05)',
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: 600, color: '#1A140E' }}>
-                      {ms.name}
-                    </div>
-                    <div style={{
-                      fontSize: '9px', fontWeight: 600, letterSpacing: '0.1em',
-                      textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif",
-                      color: stateColor, background: `${stateColor}18`,
-                      padding: '2px 8px', borderRadius: '6px',
-                    }}>
-                      {ms.state === 'mastered' ? 'Mastered' : ms.state === 'working' ? 'In progress' : 'Not started'}
-                    </div>
-                  </div>
+        {activeTab === 'scales' && (() => {
+          const last = biometricsTrend[biometricsTrend.length - 1];
+          const prev = biometricsTrend[0];
+          const scalesDefs = [
+            {
+              name: 'Rhythm',
+              description: 'Regularity and tempo of footfalls',
+              value: (last.lowerLeg + last.core) / 2,
+              prevValue: (prev.lowerLeg + prev.core) / 2,
+              color: '#8C5A3C',
+            },
+            {
+              name: 'Relaxation',
+              description: 'Suppleness and freedom from tension',
+              value: (last.pelvis + last.upperBody) / 2,
+              prevValue: (prev.pelvis + prev.upperBody) / 2,
+              color: '#C9A96E',
+            },
+            {
+              name: 'Contact',
+              description: 'Steady, elastic connection with the bit',
+              value: (last.reins + last.pelvis) / 2,
+              prevValue: (prev.reins + prev.pelvis) / 2,
+              color: '#7D9B76',
+            },
+            {
+              name: 'Impulsion',
+              description: 'Energy and thrust from the hindquarters',
+              value: (last.core + last.lowerLeg) / 2,
+              prevValue: (prev.core + prev.lowerLeg) / 2,
+              color: '#6B7FA3',
+            },
+            {
+              name: 'Straightness',
+              description: 'Alignment of the horse on straight and curved lines',
+              value: (last.reins + last.upperBody) / 2,
+              prevValue: (prev.reins + prev.upperBody) / 2,
+              color: '#C4714A',
+            },
+            {
+              name: 'Balance',
+              description: 'Distribution of weight, engagement of hindquarters',
+              value: (last.core + last.upperBody + last.pelvis) / 3,
+              prevValue: (prev.core + prev.upperBody + prev.pelvis) / 3,
+              color: '#B5A898',
+            },
+          ];
 
-                  {ms.state !== 'untouched' && (
-                    <>
-                      <div style={{ height: '4px', background: '#F0EBE4', borderRadius: '2px', overflow: 'hidden', marginBottom: '6px' }}>
-                        <div style={{ height: '100%', width: `${progress * 100}%`, background: stateColor, borderRadius: '2px', transition: 'width 0.5s' }} />
-                      </div>
-                      <div style={{ fontSize: '10px', color: '#B5A898', fontFamily: "'DM Mono', monospace" }}>
-                        {ms.state === 'mastered' ? '5/5 rides consistent' : `${ms.ridesConsistent}/${ms.ridesRequired} rides consistent`}
-                      </div>
-                    </>
-                  )}
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ padding: '10px 14px', background: '#EEF2F8', borderRadius: '12px', border: '1px solid rgba(107,127,163,0.15)' }}>
+                <p style={{ fontSize: '11.5px', color: '#6B7FA3', fontFamily: "'DM Sans', sans-serif", lineHeight: 1.5, margin: 0 }}>
+                  The USDF Scales of Training — derived from your biomechanics data. These build on each other from the ground up.
+                </p>
+              </div>
 
-                  <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
-                    {ms.biomechanicsFocus.slice(0, 2).map(f => (
-                      <span key={f} style={{
-                        fontSize: '9.5px', color: '#6B7FA3', background: '#EEF2F8',
-                        padding: '2px 7px', borderRadius: '6px',
-                        fontFamily: "'DM Sans', sans-serif",
+              {scalesDefs.map((scale, idx) => {
+                const pct = Math.round(scale.value * 100);
+                const delta = Math.round((scale.value - scale.prevValue) * 100);
+                const trend = delta > 2 ? 'up' : delta < -2 ? 'down' : 'flat';
+                const trendColor = trend === 'up' ? '#7D9B76' : trend === 'down' ? '#C4714A' : '#B5A898';
+                const trendSymbol = trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→';
+                return (
+                  <div key={scale.name} style={{
+                    background: '#FFFFFF', borderRadius: '16px', padding: '14px 16px',
+                    boxShadow: '0 2px 10px rgba(26,20,14,0.05)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <div style={{
+                        width: '22px', height: '22px', borderRadius: '50%',
+                        background: `${scale.color}18`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
                       }}>
-                        {f}
-                      </span>
-                    ))}
+                        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '9px', fontWeight: 600, color: scale.color }}>{idx + 1}</span>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: 600, color: '#1A140E' }}>{scale.name}</div>
+                        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '10px', color: '#B5A898' }}>{scale.description}</div>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '18px', fontWeight: 500, color: scale.color, lineHeight: 1 }}>{pct}%</div>
+                        <div style={{ fontSize: '9px', color: trendColor, fontFamily: "'DM Sans', sans-serif", marginTop: '2px' }}>
+                          {trendSymbol} {Math.abs(delta)}pts
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ height: '5px', background: '#F0EBE4', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: scale.color, borderRadius: '3px' }} />
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+
+              <div style={{ padding: '10px 14px', background: '#FAF7F3', borderRadius: '12px', border: '1px solid #EDE7DF' }}>
+                <p style={{ fontSize: '10.5px', color: '#B5A898', fontFamily: "'DM Sans', sans-serif", lineHeight: 1.5, margin: 0 }}>
+                  Scores are derived from your biomechanics data. They update as you record more rides. Video analysis increases accuracy.
+                </p>
+              </div>
+            </div>
+          );
+        })()}
 
         {activeTab === 'patterns' && <PatternsTab />}
 

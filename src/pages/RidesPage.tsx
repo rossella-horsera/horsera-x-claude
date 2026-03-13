@@ -18,6 +18,97 @@ const rideTypeLabel: Record<string, string> = {
   'ride-out':  '🌲 Ride Out',
 };
 
+// ─── Best-clip hero ────────────────────────────────────────────────────────────
+
+function BestClipHero({ ride, onClick }: { ride: Ride; onClick: () => void }) {
+  const dateStr = new Date(ride.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const signal = signalConfig[ride.signal];
+
+  return (
+    <button
+      onClick={onClick}
+      aria-label="View your best ride clip"
+      style={{
+        width: '100%', border: 'none', cursor: 'pointer', padding: 0, display: 'block',
+        background: 'transparent',
+      }}
+    >
+      <div style={{
+        position: 'relative', height: '190px', overflow: 'hidden',
+        background: '#1C1510',
+        borderRadius: '0',
+      }}>
+        {/* Atmospheric warm overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(135deg, rgba(140,90,60,0.12) 0%, rgba(28,21,16,0.80) 100%)',
+        }} />
+
+        {/* Film strip decoration — left */}
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '18px', background: '#111', display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', alignItems: 'center', gap: 0, zIndex: 2 }}>
+          {Array.from({ length: 9 }).map((_, i) => (
+            <div key={i} style={{ width: '10px', height: '8px', background: '#1C1510', borderRadius: '1px' }} />
+          ))}
+        </div>
+        {/* Film strip — right */}
+        <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '18px', background: '#111', display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', alignItems: 'center', zIndex: 2 }}>
+          {Array.from({ length: 9 }).map((_, i) => (
+            <div key={i} style={{ width: '10px', height: '8px', background: '#1C1510', borderRadius: '1px' }} />
+          ))}
+        </div>
+
+        {/* Badge — top left */}
+        <div style={{ position: 'absolute', top: 12, left: 26, zIndex: 3, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{
+            fontSize: '9px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: 'rgba(201,169,110,0.90)', fontFamily: "'DM Mono', monospace",
+          }}>
+            Best clip
+          </span>
+        </div>
+
+        {/* Duration badge — top right */}
+        <div style={{ position: 'absolute', top: 10, right: 26, zIndex: 3, background: 'rgba(201,169,110,0.20)', borderRadius: '6px', padding: '3px 8px' }}>
+          <span style={{ fontSize: '10px', fontWeight: 600, color: '#C9A96E', fontFamily: "'DM Mono', monospace" }}>6s</span>
+        </div>
+
+        {/* Play button — centered */}
+        <div style={{
+          position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3,
+        }}>
+          <div style={{
+            width: '52px', height: '52px', borderRadius: '50%',
+            background: 'rgba(250,247,243,0.18)',
+            backdropFilter: 'blur(6px)',
+            border: '1.5px solid rgba(250,247,243,0.30)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {/* Play triangle */}
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M6 4L14 9L6 14V4Z" fill="rgba(250,247,243,0.90)" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Metadata — bottom */}
+        <div style={{ position: 'absolute', bottom: 12, left: 26, right: 26, zIndex: 3 }}>
+          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '9.5px', color: 'rgba(181,168,152,0.70)', marginBottom: '3px' }}>
+            {dateStr} · {ride.duration}min
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '13px', fontWeight: 500, color: 'rgba(250,247,243,0.85)' }}>
+              {ride.focusMilestone}
+            </span>
+            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: signal.color, fontWeight: 600 }}>
+              {signal.symbol} {signal.label}
+            </span>
+          </div>
+        </div>
+      </div>
+    </button>
+  );
+}
+
 export default function RidesPage() {
   const navigate = useNavigate();
   const [showLogForm, setShowLogForm] = useState(false);
@@ -46,6 +137,8 @@ export default function RidesPage() {
     acc[key].push(ride);
     return acc;
   }, {} as Record<string, Ride[]>);
+
+  const bestClipRide = mockRides.find(r => r.videoUploaded);
 
   return (
     <div style={{ background: '#FAF7F3', minHeight: '100%' }}>
@@ -234,6 +327,10 @@ export default function RidesPage() {
             </>
           )}
         </div>
+      )}
+
+      {bestClipRide && !showLogForm && (
+        <BestClipHero ride={bestClipRide} onClick={() => navigate(`/rides/${bestClipRide.id}`)} />
       )}
 
       <div style={{ padding: '16px 20px 28px' }}>

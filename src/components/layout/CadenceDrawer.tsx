@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { mockRider, cadenceInsights } from '../../data/mock';
+import { mockRider, mockGoal, mockRides, cadenceInsights } from '../../data/mock';
+import { supabase } from '../../integrations/supabase/client';
 
 interface Message {
   role: 'cadence' | 'rider';
@@ -14,21 +15,75 @@ const suggestedPrompts = [
   'Explain my lower leg stability score',
 ];
 
-const getCadenceResponse = (question: string): string => {
+// ─── Daily message limit ───────────────────────────────────────────────────────
+const DAILY_LIMIT = 20;
+const LIMIT_KEY = 'cadence_msg_count';
+const LIMIT_DATE_KEY = 'cadence_msg_date';
+
+function getRemainingMessages(): number {
+  const today = new Date().toDateString();
+  const savedDate = localStorage.getItem(LIMIT_DATE_KEY);
+  if (savedDate !== today) {
+    localStorage.setItem(LIMIT_DATE_KEY, today);
+    localStorage.setItem(LIMIT_KEY, '0');
+    return DAILY_LIMIT;
+  }
+  const count = parseInt(localStorage.getItem(LIMIT_KEY) ?? '0', 10);
+  return Math.max(0, DAILY_LIMIT - count);
+}
+
+function incrementMessageCount() {
+  const today = new Date().toDateString();
+  localStorage.setItem(LIMIT_DATE_KEY, today);
+  const count = parseInt(localStorage.getItem(LIMIT_KEY) ?? '0', 10);
+  localStorage.setItem(LIMIT_KEY, String(count + 1));
+}
+
+// ─── Rider context builder ─────────────────────────────────────────────────────
+function buildRiderContext() {
+  const activeMilestone = mockGoal.milestones.find(m => m.state === 'working');
+  const recentRides = mockRides.slice(0, 5).map(r => ({
+    date: new Date(r.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+    focus: r.focusMilestone,
+    signal: r.signal,
+    reflection: r.reflection,
+  }));
+
+  return {
+    riderName: mockRider.firstName,
+    horse: mockRider.horse,
+    trainer: mockRider.trainer ?? 'your trainer',
+    activeMilestoneName: activeMilestone?.name ?? 'General Training',
+    activeMilestoneNote: activeMilestone?.cadenceNote ?? cadenceInsights.home,
+    ridesConsistent: activeMilestone?.ridesConsistent ?? 0,
+    ridesRequired: activeMilestone?.ridesRequired ?? 5,
+    recentRides,
+    upcomingCompetition: mockRider.upcomingCompetition
+      ? {
+          name: mockRider.upcomingCompetition.name,
+          daysAway: mockRider.upcomingCompetition.daysAway,
+          level: mockRider.upcomingCompetition.level,
+        }
+      : undefined,
+  };
+}
+
+// ─── Fallback (when API unavailable) ──────────────────────────────────────────
+const getFallbackResponse = (question: string): string => {
   const q = question.toLowerCase();
   if (q.includes('focus') || q.includes('next ride')) {
-    return 'Based on your last 3 rides, I\'d focus on your lower leg stability — specifically the right-rein drift we\'ve been seeing. Try the two-point transitions before each canter. You have a lesson this afternoon, so this is a good thing to mention to Sarah.';
+    return 'Based on your last 3 rides, I\'d focus on your lower leg stability — specifically the right-rein drift we\'ve been seeing. Try the two-point transitions before each canter.';
   }
   if (q.includes('stirrup') || q.includes('right')) {
-    return 'The right stirrup pattern is interesting — it shows up consistently across 4 of your last 5 rides. It\'s often linked to a subtle rightward hip collapse. Your pelvis levelness score confirms this. The good news: your core stability is mastered, so you have the foundation to fix it. Try this: in your next ride, consciously weight the right stirrup in every downward transition.';
+    return 'The right stirrup pattern shows up consistently across 4 of your last 5 rides. It\'s often linked to a subtle rightward hip collapse. Your core stability is mastered, so you have the foundation to fix it. Try consciously weighting the right stirrup in every downward transition.';
   }
   if (q.includes('ready') || q.includes('spring classic') || q.includes('show')) {
-    return 'You have 21 days until the Spring Classic — that\'s actually a good amount of time. Your core stability is mastered, and rein steadiness is consolidating well (4/5 rides consistent). Lower leg stability is your main wild card at 3/5 rides. If you ride 4 times this week with intentional focus on the lower leg, I\'d rate your readiness as "nearly there" by show week. Want me to outline a prep plan?';
+    return `You have ${mockRider.upcomingCompetition?.daysAway ?? 21} days until the Spring Classic. Your core stability is mastered, and rein steadiness is consolidating well. Lower leg stability is your main wild card. Want me to outline a prep plan?`;
   }
   if (q.includes('lower leg') || q.includes('stability score')) {
-    return 'Your lower leg stability score is 0.72 — that\'s in the "slight movement" range, improving from 0.55 six weeks ago. The score measures how much your ankle drifts relative to your hip over time. The drift is mainly on the right rein and in transitions. The stirrup-less work you\'ve been doing is helping — it\'s showing in the trend.';
+    return 'Your lower leg stability is in the "slight movement" range, improving from 6 weeks ago. The drift is mainly on the right rein and in transitions. The stirrup-less work you\'ve been doing is helping — it\'s showing in the trend.';
   }
-  return 'That\'s a great question. Based on your recent rides and your current focus on Training Level Test 1, I\'d approach it this way: your strongest area right now is core stability, so use that as your anchor point. Build everything else from a solid seat outward. Is there a specific part of your training you\'d like to dig into?';
+  return 'That\'s a great question. Your strongest area right now is core stability, so use that as your anchor point. Build everything else from a solid seat outward. Is there a specific part of your training you\'d like to dig into?';
 };
 
 interface CadenceDrawerProps {
@@ -37,24 +92,27 @@ interface CadenceDrawerProps {
 }
 
 export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
+  const activeMilestone = mockGoal.milestones.find(m => m.state === 'working');
+  const openingNote = activeMilestone?.cadenceNote
+    ? `Hi ${mockRider.firstName}. ${activeMilestone.cadenceNote} What's on your mind today?`
+    : `Hi ${mockRider.firstName}. I've been watching your recent rides. Your rein steadiness has improved noticeably — and your lower leg is your current focus. What's on your mind today?`;
+
   const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'cadence',
-      text: `Hi ${mockRider.firstName}. I've been watching your recent rides. Your rein steadiness has improved noticeably — and your lower leg is your current focus. What's on your mind today?`,
-      timestamp: 'Now',
-    },
+    { role: 'cadence', text: openingNote, timestamp: 'Now' },
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [remaining, setRemaining] = useState(getRemainingMessages);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<{ start: () => void; stop: () => void; abort: () => void; onresult: ((e: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => void) | null; onerror: (() => void) | null; onend: (() => void) | null } | null>(null);
+  // Holds the conversation history in Anthropic message format for context
+  const historyRef = useRef<{ role: 'user' | 'assistant'; content: string }[]>([]);
 
   const toggleVoice = useCallback(() => {
-    // Web Speech API — only available in Chrome/Safari on device
     const SpeechRecognition = (window as unknown as { SpeechRecognition?: new () => typeof recognitionRef.current; webkitSpeechRecognition?: new () => typeof recognitionRef.current }).SpeechRecognition
       || (window as unknown as { SpeechRecognition?: new () => typeof recognitionRef.current; webkitSpeechRecognition?: new () => typeof recognitionRef.current }).webkitSpeechRecognition;
-    if (!SpeechRecognition) return; // silently skip on unsupported browsers
+    if (!SpeechRecognition) return;
 
     if (isListening) {
       recognitionRef.current?.stop();
@@ -79,7 +137,7 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendMessage = (text: string) => {
+  const sendMessage = async (text: string) => {
     if (!text.trim()) return;
     const now = new Date().toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
 
@@ -87,13 +145,114 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
     setInput('');
     setIsTyping(true);
 
-    setTimeout(() => {
+    // Check daily limit
+    if (remaining <= 0) {
       setIsTyping(false);
-      setMessages(prev => [
-        ...prev,
-        { role: 'cadence', text: getCadenceResponse(text), timestamp: now },
-      ]);
-    }, 1200);
+      setMessages(prev => [...prev, {
+        role: 'cadence',
+        text: "You've reached your daily message limit (20 messages). Come back tomorrow — I'll be here.",
+        timestamp: now,
+      }]);
+      return;
+    }
+
+    // Add to history
+    historyRef.current = [...historyRef.current, { role: 'user', content: text }];
+
+    try {
+      // Try the real Cadence API first
+      await callCadenceAPI(text, now);
+    } catch {
+      // Graceful fallback to mock responses
+      setIsTyping(false);
+      const fallback = getFallbackResponse(text);
+      historyRef.current = [...historyRef.current, { role: 'assistant', content: fallback }];
+      setMessages(prev => [...prev, { role: 'cadence', text: fallback, timestamp: now }]);
+    }
+  };
+
+  const callCadenceAPI = async (text: string, timestamp: string) => {
+    // Stream from Supabase edge function
+    const response = await supabase.functions.invoke('cadence-chat', {
+      body: {
+        messages: historyRef.current,
+        riderContext: buildRiderContext(),
+      },
+    });
+
+    if (response.error) throw response.error;
+
+    // Supabase functions.invoke doesn't support streaming directly —
+    // use fetch for the streaming response instead
+    const { data: { session } } = await supabase.auth.getSession();
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
+    const fetchResponse = await fetch(`${supabaseUrl}/functions/v1/cadence-chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': anonKey,
+        'Authorization': `Bearer ${session?.access_token ?? anonKey}`,
+      },
+      body: JSON.stringify({
+        messages: historyRef.current,
+        riderContext: buildRiderContext(),
+      }),
+    });
+
+    if (!fetchResponse.ok) throw new Error(`HTTP ${fetchResponse.status}`);
+    if (!fetchResponse.body) throw new Error('No response body');
+
+    incrementMessageCount();
+    setRemaining(getRemainingMessages());
+
+    // Stream the response into a message
+    setIsTyping(false);
+    let accumulated = '';
+    const placeholderTimestamp = timestamp;
+
+    setMessages(prev => [...prev, { role: 'cadence', text: '', timestamp: placeholderTimestamp }]);
+
+    const reader = fetchResponse.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') continue;
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.text) {
+            accumulated += parsed.text;
+            setMessages(prev => {
+              const updated = [...prev];
+              updated[updated.length - 1] = {
+                role: 'cadence',
+                text: accumulated,
+                timestamp: placeholderTimestamp,
+              };
+              return updated;
+            });
+          }
+        } catch {
+          // skip
+        }
+      }
+    }
+
+    if (accumulated) {
+      historyRef.current = [...historyRef.current, { role: 'assistant', content: accumulated }];
+    }
   };
 
   if (!open) return null;
@@ -154,10 +313,16 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
             <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '15px', fontWeight: 600, color: '#1A140E' }}>Cadence</div>
             <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '11px', color: '#B5A898' }}>Your intelligent riding advisor</div>
           </div>
+          {remaining <= 5 && remaining > 0 && (
+            <div style={{ marginLeft: 'auto', marginRight: '8px', fontSize: '10px', color: '#C4714A', fontFamily: "'DM Mono', monospace" }}>
+              {remaining} left today
+            </div>
+          )}
           <button
             onClick={onClose}
             style={{
-              marginLeft: 'auto', background: 'none', border: 'none',
+              marginLeft: remaining <= 5 && remaining > 0 ? 0 : 'auto',
+              background: 'none', border: 'none',
               cursor: 'pointer', color: '#B5A898', fontSize: '20px', lineHeight: 1,
               padding: '4px',
             }}
@@ -192,7 +357,14 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                {msg.text}
+                {msg.text || (
+                  // Show typing dots while streaming
+                  <div style={{ display: 'flex', gap: 4, padding: '2px 0' }}>
+                    {[0, 1, 2].map(j => (
+                      <div key={j} style={{ width: 6, height: 6, borderRadius: '50%', background: '#6B7FA3', animation: `bounce 1.2s ${j * 0.2}s infinite` }} />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -272,6 +444,7 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && sendMessage(input)}
             placeholder={isListening ? 'Listening…' : 'Ask Cadence anything…'}
+            disabled={remaining <= 0}
             style={{
               flex: 1,
               padding: '10px 14px',
@@ -283,23 +456,25 @@ export default function CadenceDrawer({ open, onClose }: CadenceDrawerProps) {
               fontFamily: "'DM Sans', sans-serif",
               outline: 'none',
               transition: 'border-color 0.15s ease',
+              opacity: remaining <= 0 ? 0.5 : 1,
             }}
           />
           <button
             onClick={() => sendMessage(input)}
+            disabled={remaining <= 0}
             style={{
               width: 40, height: 40,
               borderRadius: '50%',
-              background: input.trim() ? '#8C5A3C' : '#F0EBE4',
+              background: input.trim() && remaining > 0 ? '#8C5A3C' : '#F0EBE4',
               border: 'none',
-              cursor: input.trim() ? 'pointer' : 'default',
+              cursor: input.trim() && remaining > 0 ? 'pointer' : 'default',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               transition: 'background 0.15s ease',
               flexShrink: 0,
             }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke={input.trim() ? '#FAF7F3' : '#B5A898'} strokeWidth="2" strokeLinecap="round" />
+              <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke={input.trim() && remaining > 0 ? '#FAF7F3' : '#B5A898'} strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
         </div>

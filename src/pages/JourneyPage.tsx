@@ -175,7 +175,10 @@ function LevelPath({ currentLevel, selectedLevel, onLevelSelect }: { currentLeve
 // ─── Milestone detail panel ────────────────────────────────────────────────────
 
 function MilestoneDetail({ milestone }: { milestone: Milestone }) {
-  const [tab, setTab] = useState<'exercises' | 'about'>('exercises');
+  const hasDeliverables = (milestone.deliverables?.length ?? 0) > 0;
+  const [tab, setTab] = useState<'exercises' | 'deliverables' | 'about'>(
+    hasDeliverables ? 'deliverables' : 'exercises'
+  );
 
   return (
     <div style={{
@@ -206,10 +209,10 @@ function MilestoneDetail({ milestone }: { milestone: Milestone }) {
       <div style={{ height: '1px', background: '#F0EBE4', marginBottom: '12px' }} />
 
       <div style={{ display: 'flex', gap: 4, marginBottom: '12px' }}>
-        {(['exercises', 'about'] as const).map(t => (
+        {([...(hasDeliverables ? ['deliverables'] : []), 'exercises', 'about'] as const).map(t => (
           <button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => setTab(t as typeof tab)}
             style={{
               flex: 1, padding: '7px', borderRadius: '8px', border: 'none', cursor: 'pointer',
               background: tab === t ? '#F0EBE4' : 'transparent',
@@ -218,10 +221,36 @@ function MilestoneDetail({ milestone }: { milestone: Milestone }) {
               fontFamily: "'DM Sans', sans-serif",
             }}
           >
-            {t.charAt(0).toUpperCase() + t.slice(1)}
+            {t === 'deliverables' ? 'Breakdown' : t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
       </div>
+
+      {tab === 'deliverables' && milestone.deliverables && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <p style={{ fontSize: '11px', color: '#B5A898', fontFamily: "'DM Sans', sans-serif", lineHeight: 1.5, marginBottom: '2px' }}>
+            How far along each component of this movement
+          </p>
+          {milestone.deliverables.map((d, i) => {
+            const barColor = d.pct >= 80 ? '#7D9B76' : d.pct >= 50 ? '#C9A96E' : '#C4714A';
+            return (
+              <div key={i} style={{ padding: '10px 12px', background: '#FAF7F3', borderRadius: '10px', border: '1px solid #F0EBE4' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '12px', color: '#1A140E', fontFamily: "'DM Sans', sans-serif", fontWeight: 500, flex: 1, paddingRight: '8px' }}>
+                    {d.task}
+                  </span>
+                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '12px', fontWeight: 500, color: barColor, flexShrink: 0 }}>
+                    {d.pct}%
+                  </span>
+                </div>
+                <div style={{ height: '4px', background: '#EDE7DF', borderRadius: '2px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${d.pct}%`, background: barColor, borderRadius: '2px' }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {tab === 'exercises' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
