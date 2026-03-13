@@ -1103,12 +1103,11 @@ function InsightRows({ insights }: { insights: MovementInsight[] }) {
 // Processing progress
 // ─────────────────────────────────────────────────────────
 
-function AnalysisProgress({ status, progress }: { status: AnalysisStatus; progress: number }) {
-  const labels: Partial<Record<AnalysisStatus, string>> = {
-    'loading-model': 'Loading Cadence AI model…',
-    'extracting':    'Reading video frames…',
-    'processing':    `Analysing movement — ${progress}%`,
-  };
+function AnalysisProgress({ status, progress, eta }: { status: AnalysisStatus; progress: number; eta?: string }) {
+  const mainLabel =
+    status === 'loading-model' ? 'Loading Cadence AI model…' :
+    status === 'processing'    ? 'Finalising analysis…' :
+    `Analysing movement — ${progress}%`;
   return (
     <div style={{
       background: '#1C1510', aspectRatio: '16/9',
@@ -1123,7 +1122,7 @@ function AnalysisProgress({ status, progress }: { status: AnalysisStatus; progre
         animation: 'cadence-breathe 2s ease-in-out infinite',
       }} />
       <div style={{ fontSize: '13px', color: 'rgba(250,247,243,0.8)', fontFamily: "'DM Sans', sans-serif", textAlign: 'center' }}>
-        {labels[status] ?? 'Working…'}
+        {mainLabel}
       </div>
       <div style={{ width: '180px', height: '3px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
         <div style={{
@@ -1133,7 +1132,7 @@ function AnalysisProgress({ status, progress }: { status: AnalysisStatus; progre
         }} />
       </div>
       <div style={{ fontSize: '10px', color: 'rgba(250,247,243,0.35)', fontFamily: "'DM Mono', monospace" }}>
-        Processing on your device · No upload needed
+        {eta || 'Processing on your device · No upload needed'}
       </div>
     </div>
   );
@@ -1496,6 +1495,7 @@ interface VideoAnalysisProps {
   analysisResult:   VideoAnalysisResult | null;
   analysisStatus:   AnalysisStatus;
   analysisProgress: number;
+  analysisEta?:     string;
   analysisError:    string | null;
   onVideoSelected:  (file: File) => void;
   mockBiometrics?:  BiometricsSnapshot;
@@ -1507,6 +1507,7 @@ export default function VideoAnalysis({
   analysisResult,
   analysisStatus,
   analysisProgress,
+  analysisEta,
   analysisError,
   onVideoSelected,
   mockBiometrics,
@@ -1525,7 +1526,7 @@ export default function VideoAnalysis({
   if (['loading-model', 'extracting', 'processing'].includes(analysisStatus)) {
     return (
       <div style={{ background: '#FFFFFF', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(26,20,14,0.05)' }}>
-        <AnalysisProgress status={analysisStatus} progress={analysisProgress} />
+        <AnalysisProgress status={analysisStatus} progress={analysisProgress} eta={analysisEta} />
       </div>
     );
   }

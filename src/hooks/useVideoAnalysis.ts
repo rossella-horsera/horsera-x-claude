@@ -39,12 +39,15 @@ export type AnalysisStatus =
   | 'done'
   | 'error';
 
-const SAMPLE_INTERVAL_SEC = 5;
-const MAX_FRAMES          = 600;
+// Target a fixed frame count regardless of video length.
+// For a 30-min video this means 1 frame every 15s → ~120 frames → ~90s on iPhone 12.
+const TARGET_FRAMES    = 120;
+const MIN_INTERVAL_SEC = 5;   // never sample more densely than 1 frame/5s
 
 export function useVideoAnalysis(previousBiometrics?: BiometricsSnapshot) {
   const [status,   setStatus]   = useState<AnalysisStatus>('idle');
   const [progress, setProgress] = useState(0);
+  const [eta,      setEta]      = useState<string>('');
   const [result,   setResult]   = useState<VideoAnalysisResult | null>(null);
   const [error,    setError]    = useState<string | null>(null);
 
@@ -66,6 +69,7 @@ export function useVideoAnalysis(previousBiometrics?: BiometricsSnapshot) {
 
     setStatus('loading-model');
     setProgress(0);
+    setEta('');
     setError(null);
     setResult(null);
 
@@ -114,8 +118,13 @@ export function useVideoAnalysis(previousBiometrics?: BiometricsSnapshot) {
         throw new Error('Video duration could not be determined. Try re-saving the file.');
       }
 
-      const totalSamples  = Math.min(Math.floor(duration / SAMPLE_INTERVAL_SEC), MAX_FRAMES);
-      const actualInterval = duration / totalSamples;
+      // Adaptive interval: always targets ~TARGET_FRAMES samples, with a minimum spacing.
+      // 5-min video  → interval 5s  → ~60 frames
+      // 15-min video → interval 8s  → ~112 frames
+      // 30-min video → interval 15s → ~120 frames
+      const adaptiveInterval = Math.max(MIN_INTERVAL_SEC, duration / TARGET_FRAMES);
+      const totalSamples     = Math.floor(duration / adaptiveInterval);
+      const actualInterval   = duration / Math.max(1, totalSamples);
 
       // ── Canvas for MoveNet inference ────────────────────────────────
       // Match the video's native aspect ratio so keypoints normalize correctly.
@@ -130,6 +139,9 @@ export function useVideoAnalysis(previousBiometrics?: BiometricsSnapshot) {
       const allFrames:    TimestampedFrame[] = [];
       const frameKps:     PoseFrame[]        = [];  // for metric computation
       let thumbnailDataUrl = '';
+      const loopStartMs = Date.now();
+
+      setStatus('extracting');
 
       for (let i = 0; i < totalSamples; i++) {
         const seekTime = i * actualInterval;
@@ -142,8 +154,6 @@ export function useVideoAnalysis(previousBiometrics?: BiometricsSnapshot) {
         });
 
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        setStatus('processing');
 
         const poses = await detectorRef.current!.estimatePoses(canvas);
         if (poses.length > 0) {
@@ -161,8 +171,24 @@ export function useVideoAnalysis(previousBiometrics?: BiometricsSnapshot) {
           }
         }
 
-        setProgress(Math.round(((i + 1) / totalSamples) * 100));
+        const framesCompleted = i + 1;
+        const pct = Math.round((framesCompleted / totalSamples) * 100);
+        setProgress(pct);
+
+        // Update ETA estimate after at least 3 frames so it's meaningful
+        if (framesCompleted >= 3 && framesCompleted < totalSamples) {
+          const elapsedSec  = (Date.now() - loopStartMs) / 1000;
+          const msPerFrame  = elapsedSec / framesCompleted;
+          const remaining   = Math.round(msPerFrame * (totalSamples - framesCompleted));
+          setEta(remaining >= 60
+            ? `~${Math.ceil(remaining / 60)} min remaining`
+            : `~${remaining}s remaining`);
+        } else if (framesCompleted === totalSamples) {
+          setEta('');
+        }
       }
+
+      setStatus('processing');
 
       // ── Find best moment ────────────────────────────────────────────
       const timestamps   = allFrames.map(f => f.time);
@@ -207,9 +233,10 @@ export function useVideoAnalysis(previousBiometrics?: BiometricsSnapshot) {
     }
     setStatus('idle');
     setProgress(0);
+    setEta('');
     setResult(null);
     setError(null);
   }, []);
 
-  return { status, progress, result, error, analyzeVideo, reset };
+  return { status, progress, eta, result, error, analyzeVideo, reset };
 }

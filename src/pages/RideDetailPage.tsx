@@ -1,8 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CadenceInsightCard from '../components/ui/CadenceInsightCard';
 import VideoAnalysis from '../components/ui/VideoAnalysis';
 import { useVideoAnalysis } from '../hooks/useVideoAnalysis';
+import { useMilestoneProgress } from '../hooks/useMilestoneProgress';
 import { generateInsights } from '../lib/poseAnalysis';
 import { mockRides, mockGoal, mockRider } from '../data/mock';
 import { supabase } from '../integrations/supabase/client';
@@ -31,10 +32,22 @@ export default function RideDetailPage() {
 
   // Previous ride biometrics — used by the analysis hook to compute trend arrows
   const prevRide = mockRides.find(r => r.id !== ride.id && r.biometrics);
-  const { status, progress, result, error, analyzeVideo } = useVideoAnalysis(prevRide?.biometrics);
+  const { status, progress, eta, result, error, analyzeVideo } = useVideoAnalysis(prevRide?.biometrics);
 
   const [linkCopied, setLinkCopied] = useState(false);
   const [generatingLink, setGeneratingLink] = useState(false);
+  const { incrementProgress } = useMilestoneProgress();
+
+  // When video analysis completes, bump the milestone's ridesConsistent count
+  useEffect(() => {
+    if (status === 'done' && milestone) {
+      incrementProgress(
+        milestone.id,
+        milestone.ridesConsistent,
+        milestone.ridesRequired,
+      );
+    }
+  }, [status]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const inviteTrainerFeedback = useCallback(async () => {
     if (generatingLink) return;
@@ -254,6 +267,7 @@ export default function RideDetailPage() {
           analysisResult={result}
           analysisStatus={status}
           analysisProgress={progress}
+          analysisEta={eta}
           analysisError={error}
           onVideoSelected={analyzeVideo}
           mockBiometrics={ride.biometrics}
